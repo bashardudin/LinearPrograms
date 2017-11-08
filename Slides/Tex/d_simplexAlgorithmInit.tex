@@ -1,0 +1,249 @@
+\documentclass[32pt, aspectratio = 169]{beamer}
+
+\usepackage[utf8]{inputenc} % Character encoding.
+
+\pdfinfo{
+   /Author (Bashar Dudin)
+   /Title  (Simplex Algorithm Pre-Treatment)
+   /Subject (Linear Programs)
+}
+
+
+\usepackage{./Style/linearProgramsBeamer} % This is extra styling for Beamer environments.
+\usepackage{./Style/linearProgramsStyle} % This is a set of commands for maths content.
+
+%-------------------------------------------------------------------------------
+%   TITLE PAGE
+%-------------------------------------------------------------------------------
+
+\author[BD]{Bashar Dudin}
+
+\institute[]{EPITA}
+
+\title{Linear Programs} %
+\subtitle{Initializing The Simplex Algorithm}
+
+%-------------------------------------------------------------------------------
+%   DOCUMENT BODY
+%-------------------------------------------------------------------------------
+
+\begin{document}
+
+\begin{frame}[plain]
+    \titlepage % Print the title page as the first slide
+\end{frame}
+
+\begin{frame}{Where We Stand, What We Face?}
+
+    We now have an algorithm \textsc{Simplex} (\textit{Restricted}), which is conjectured to solve linear programs. For the time being we've shown that it terminates either by specifying that we have an unbounded linear program, or by returning a finite value \textit{expected} to be the maximum we are looking for.
+
+    Uptill now, we've been working under the following two assumptions :
+    \begin{itemize}
+        \item Our linear program is \emph{feasible} ; meaning that it has at least one feasible solution
+        \item The basic solution of the initial slack form is feasible.
+    \end{itemize}
+
+    During this lecture, we are going to build a function \textsc{InitSimplex} taking in a linear program $(\bs{A}, \bs{b}, \bs{c})$ and either returning back the fact it is \emph{not} feasible or a linear program $(N, B, \underline{\bs{A}}, \underline{\bs{b}}, \underline{\bs{c}}, \nu)$ in slack form and that has feasible basic solution.
+\end{frame}
+
+\section{Feasibility}
+
+\begin{frame}{Deciding On Feasibility}
+    \begin{columns}[T]
+        \begin{column}{.5\textwidth}
+            Let $L$ be the linear program, given in standard form :
+            \begin{figure}
+            \begin{linearProgG}{
+                ${\displaystyle z = \nu + \sum_{j=1}^n c_jx_j}$
+                }{
+                ${\displaystyle \forall i \in B, \quad \sum_{j=1}^n a_{ij}x_j \leq b_i}$
+                }{
+                $\forall j \in N, \quad x_j \geq 0$
+                }
+            \end{linearProgG}
+            \end{figure}
+        \end{column}
+        \begin{column}{.55\textwidth}
+            \begin{tcolorbox}[
+                enhanced,
+                parbox = true,
+                colback = mLightBrown!30!white,
+                colframe = mLightBrown!30!white,
+                arc = 0mm,
+                ]
+                Out of $L$ we build the following auxiliary linear program $L_{marker}$ :
+                \begin{figure}
+                    \begin{linearProgG}{
+                        ${\displaystyle z = - x_0}$
+                        }{
+                        ${\displaystyle \forall i \in B, \quad \sum_{j=1}^n a_{ij}x_j - x_0\leq b_i}$
+                        }{
+                        $\forall j \in N\cup \{0\}, \quad x_j \geq 0$
+                        }
+                    \end{linearProgG}
+                \end{figure}
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Deciding On Feasibility}
+    \begin{prop}
+        $L$ is feasible if, and only if, the optimal objective value of $L_{marker}$ is $0$.
+    \end{prop}
+    \begin{overlayarea}{\textwidth}{.8\textheight}
+        \vspace{.2\baselineskip}
+    \begin{onlyenv}<2>
+        \setlength\columnseprule{.1pt}
+        \begin{multicols}{2}
+        \begin{demo}
+            Notice first that the optimal objective value of $L_{marker}$ is $0$. Therefore, if we show that $0$ is an objective value of $L_{marker}$ it is necessarily the optimal one.
+
+            If $L$ is feasible then there is a tuple $(t_1, \ldots, t_n)$ of non-negative real numbers satisfying all linear constraints of $L$. The tuple $(0, t_1, \ldots, t_n)$ does thus satisfy $L_{marker}$ and $0$ is then a objective value of $L_{marker}$, i.e. the optimal one.
+
+            Conversely, if $L_{marker}$ has objective value $0$ (thus optimal) it is of the form $(0, t_1, \ldots, t_n)$. Plugging this tuple in the linear constraints of $L_{marker}$ it implies $(t_1, \ldots, t_n)$ is a solution of $L$.
+        \end{demo}
+    \end{multicols}
+    \end{onlyenv}
+    \begin{onlyenv}<3>
+    The difference between $L$ and $L_{marker}$ is that $L_{marker}$ is always feasible :
+        \begin{center}
+        \begin{minipage}{.8\textwidth}
+        \begin{tcolorbox}[
+                enhanced,
+                parbox = true,
+                colback = mLightBrown!30!white,
+                colframe = mLightBrown!30!white,
+                arc = 0mm,
+                ]
+            If $E$ is the set of indices of $B$ such that $b_i$ is negative then the tuple $(-\min_i\{b_i\}, 0, \ldots, 0)$ is a feasible solution of $L_{marker}$.
+        \end{tcolorbox}
+        \end{minipage}
+        \end{center}
+        Thus, temporarily admitting validity of the \textit{restricted} simplex algorithm, if we're able to find a linear program equivalent to $L_{marker}$ which has \alert{feasible basic solution} then we can decide on feasibilty of $L$.
+    \end{onlyenv}
+    \end{overlayarea}
+\end{frame}
+
+\begin{frame}{Deciding On Feasibility}
+    \setlength\columnseprule{.1pt}
+    \begin{multicols}{2}
+        Consider the following slack form of $L_{marker}$
+        \begin{figure}
+            \begin{linearProgG}{
+                ${\displaystyle z = -x_0}$
+                }{
+                ${\displaystyle \forall i \in B, \quad x_i = b_i - \sum_{j=1}^n a_{ij}x_j + x_0}$
+                }{
+                $\forall j \in N\cup B \cup\{0 \}, \quad x_j \geq 0$
+                }
+            \end{linearProgG}
+        \end{figure}
+        Basic solution of $L_{marker}$ is not feasible as soon as $L$ is not, i.e. as soon as one of the $b_i$ is negative. \alert{\textbf{We assume this is the case}}.
+
+        Let $k$ be the index of a minimum $b_k$ among all $b_i$ coefficients. We already know that $(-b_k, 0, \ldots, 0)$ is a feasible solution of $L_{marker}$.
+
+        Let's now use \textsc{Pivot} with entering variable $0$ and leaving one $k$. The \alert{\textbf{same}} previous feasible solution of $L_{marker}$ is now the basic solution of the linear program we got after pivotting.
+        \vspace{.5\baselineskip}
+
+        \textbf{We got an equivalent linear program to $\bs{L_{marker}}$ having feasible basic solution !}
+    \end{multicols}
+\end{frame}
+
+\begin{frame}{Testing Feasibility}
+    \setlength\columnseprule{.1pt}
+    \begin{multicols}{2}
+    \small{
+    \begin{algorithmic}[1]
+        \Require $L = (\bs{A}, \bs{b}, \bs{c})$ a linear program in standard form having infeasible initial basic solution
+        \Ensure An auxiliary linear program having feasible basic solution if $L$ is feasible, raises an exception \textit{infeasible} otherwise.
+        \Statex
+        \Function{IsFeasible}{$\bs{A}, \bs{b}, \bs{c}$}
+            \State form $L_{marker}$ by adding a column of $-1$s at the beginning of $\bs{A}$ and change $\bs{c}$ to $(-1, 0, \ldots, 0)$.
+            \State \Comment{corresponds to adding $-x_0$ on the left hand of each linear constraint and to putting objective function to $-x_0$}
+            \State let $(N, B, \bs{A}, \bs{b}, \bs{c}, 0)$ be the resulting slack form of $L_{marker}$
+            \State $k \gets \textrm{index of} \min_i\{b_i\}$
+            \State ($N$, $B$, $\bs{A}$, $\bs{b}$, $\bs{c}$, $0$, $k$, $0$) = \Call{Pivot}{$N$, $B$, $\bs{A}$, $\bs{b}$, $\bs{c}$, $0$, $k$, $0$}
+            \State \Comment{The basic solution for $L_{marker}$ is now feasible}
+            \If{\Call{Simplex}{$N$, $B$, $\bs{A}$, $\bs{b}$, $\bs{c}$, $0$} = $0$}
+                \State \Return{($N$, $B$, $\bs{A}$, $\bs{b}$, $\bs{c}$, $0$)}
+            \Else
+                \State \textbf{raise exception} \textit{infeasible}
+            \EndIf
+            \EndFunction
+       \Statex
+      \end{algorithmic}
+      }
+    \end{multicols}
+\end{frame}
+
+\section{Get A Feasible Basic Solution}
+
+\begin{frame}{Getting a Feasible Basic Solution}
+    \begin{halfshyblock}{Assumption}
+        We assume \textsc{IsFeasible}($L$) didn't raise any exception.
+    \end{halfshyblock}
+    \vspace{.5\baselineskip}
+    \begin{overlayarea}{\textwidth}{.6\textheight}
+        \begin{onlyenv}<2>
+            Under the previous assumption \textsc{IsFeasible} returns an equivalent linear program $L'$ to $L_{marker}$ which has feasible basic solution with objective value $0$.
+        \end{onlyenv}
+        \begin{onlyenv}<3->
+            Let's replace the objective value of $L'$ with the one of $L$ we started with. To get a linear program $L''$ out of this we also need to replace the possible basic variables of the objective value with their expressions in terms of non-basic variables of $L'$. Let's also make sure that $x_0$ is not a basic variable of $L''$ by pivoting $L''$ with leaving variable $x_0$ and any other entering variable having non-zero coefficient in the corresponding line.
+            \vspace{.5\baselineskip}
+            \begin{halfshyblock}{Fact}
+                Putting $x_0$ to $0$ in $L''$ gives back a linear program whose equivalent to $L$ and has feasible basic solution.
+            \end{halfshyblock}
+        \end{onlyenv}
+    \end{overlayarea}
+\end{frame}
+
+\begin{frame}{The \textsc{InitSimplex} Function}
+    \small{
+    \begin{algorithmic}[1]
+        \Require $L = (\bs{A}, \bs{b}, \bs{c})$ a linear program in standard form
+        \Ensure An equivalent program having feasible basic solution if $L$ is feasible.
+        \Function{InitSimplex}{$\bs{A}, \bs{b}, \bs{c}$}
+            \If{\Call{IsFeasible}{$\bs{A}, \bs{b}, \bs{c}$} raises an exception}
+                \State \textbf{raise exception} \textit{infeasible}
+            \Else
+                \State ($N$, $B$, $\bs{A'}$, $\bs{b'}$, $\bs{c'}$, $\nu$) = \Call{IsFeasible}{$\bs{A}, \bs{b}, \bs{c}$}
+                \If{$0$ is basic}
+                    \State Choose $e$ such that $a_{0e}' \neq 0$
+                    \State ($N$, $B$, $\bs{A'}$, $\bs{b'}$, $\bs{c'}$, $\nu$) = \Call{Pivot}{$N$, $B$, $\bs{A'}$, $\bs{b'}$, $\bs{c'}$, $\nu$, $0$, $e$}
+                \EndIf
+                \State Update $(\bs{c}, \nu)$ to express objective value in terms non-basic indices
+                \State Remove column corresponding to index $0$ from $\bs{A'}$
+                \State \Return{($N$, $B$, $\bs{A'}$, $\bs{b'}$, $\bs{c}$, $\nu$)}
+            \EndIf
+        \EndFunction
+        \Statex
+    \end{algorithmic}
+    }
+\end{frame}
+
+\begin{frame}{Where We Stand?}
+    We are now able to
+    \begin{itemize}
+        \item know whether a linear program is feasible or not using \textsc{IsFeasible}
+        \item if it is feasible we can build up an equivalent linear program which has feasible basic solution using \textsc{InitSimplex}
+        \item once we get a linear program having feasible basic solution we can check whether our linear program is unbounded or has a \texit{hopefully} optimal finite solution using the \textit{restricted} \textsc{Simplex}.
+    \end{itemize}
+    We are left with showing validity of \textit{restricted} \textsc{Simplex} in order to show we indeed got what we hope for in the previous last point.
+    \begin{tcolorbox}[
+        enhanced,
+        parbox = false,
+        colback = mLightBrown!30!white,
+        colframe = mLightBrown!30!white,
+        arc = 0mm,
+        ]
+        We call \textsc{Simplex} the algorithm globally going through all previous steps.
+    \end{tcolorbox}
+\end{frame}
+
+\begin{frame}
+        \centering
+        {\huge \textbf{That's it for today !}}
+\end{frame}
+
+\end{document}

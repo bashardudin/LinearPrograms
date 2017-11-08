@@ -1,0 +1,43 @@
+Pre-requisites:
+
+Basic linear algebra: linear systems, Gauss elimination algorithm, matrices.
+
+Basic analysis: boundedness of numerical functions, understanding
+statement of an optimization problem.
+
+Learning outcomes:
+
+Ability to understand and implement simplex algorithm and its variants
+to solve linear programs. The latter are optimization problems subject
+to linear constraints.
+
+Course Overview:
+
+We give a detailed overview of the simplex algorithm and its variants,
+one of the major algorithms solving linear optimization problems,
+i.e. linear programs. After properly defining such programs we
+establish a number of conditions under which they have finite
+solutions. The simplex algorithm is firstly introduced under such
+restrictive conditions before being extended to any general linear
+program. Termination and validity of the algorithm are proven along
+the course. An implementation of studied pseudo-code is given and
+variants of the algorithms are discussed. Examples of low dimensional
+linear programs are studied during tutoring sessions.
+
+
+List of topics:
+
+- Defining standard and slack forms of linear programs
+- Geometric solutions to low dimensional linear programs
+- Simplex algorithm in case of basic feasiblity
+- Initialization - Ensuring feasiblity
+- Duality - Proving validity
+
+
+Assessement scheme:
+
+Written exam at the end of the course.
+
+Recommended courses:
+
+A good read is Chapter VII 29 "Linear Programming" of "Introduction to Algorithms" by Cormen, Leiserson, Rivest and Stein.

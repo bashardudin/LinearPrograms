@@ -1,0 +1,429 @@
+\documentclass[32pt, aspectratio = 169]{beamer}
+
+\usepackage[utf8]{inputenc} % Character encoding.
+
+\pdfinfo{
+   /Author (Bashar Dudin)
+   /Title  (The Simplex Algorithm II)
+   /Subject (Linear Programs)
+}
+
+
+\usepackage{./Style/linearProgramsBeamer} % This is extra styling for Beamer environments.
+\usepackage{./Style/linearProgramsStyle} % This is a set of commands for maths content.
+
+%-------------------------------------------------------------------------------
+%   TITLE PAGE
+%-------------------------------------------------------------------------------
+
+\author[BD]{Bashar Dudin}
+
+\institute[]{EPITA}
+
+\title{Linear Programs} %
+\subtitle{The Simplex Algorithm II}
+
+%-------------------------------------------------------------------------------
+%   DOCUMENT BODY
+%-------------------------------------------------------------------------------
+
+\begin{document}
+
+\begin{frame}[plain]
+\titlepage % Print the title page as the first slide
+\end{frame}
+
+\begin{frame}{Where We Stand, What We Face}
+    Working out a (still vague) procedure we've managed to find optimal solutions for simple examples of linear programs. Unfortunately, this heuristic is far from being satisfactory. Given a linear program, here is what we're missing :
+    \begin{itemize}
+        \item[\textcolor<2>{lightgray}{\textbullet}] \textcolor<2>{lightgray}{We have no way of testing if $L$ is feasible, i.e. if it has at least a feasible solution}
+        \item[\textcolor<2>{lightgray}{\textbullet}] \textcolor<2>{lightgray}{Assuming $L$ is feasible how can we tackle the case when the basic solution is not feasible?}
+        \item[\textbullet] How can we check if $L$ is unbounded?
+        \item[\textbullet] Does the procedure we worked out even terminate in general?
+        \item[\textcolor<2>{lightgray}{\textbullet}] \textcolor<2>{lightgray}{If it does terminate with a finite objective value, is it an optimal one?}
+    \end{itemize}
+\end{frame}
+
+\section{Pivoting}
+
+\begin{frame}{Pivoting}
+    In order to answer both previous questions we'll need to properly write down involved algorithms. Given the linear program $L$ in standard form
+    \begin{figure}
+        \alt<3>{
+        \begin{linearProgG}{
+            ${\displaystyle z = \nu + \sum_{j=1}^n c_jx_j}$
+            }{
+            ${\displaystyle \forall i \in B, \quad x_i = b_i - \sum_{j=1}^n a_{ij}x_j}$
+            }{
+            $\forall j \in N\cup B, \quad x_j \geq 0$
+            }
+        \end{linearProgG}
+        }{
+        \begin{linearProgG}{
+            ${\displaystyle z = \nu + \sum_{j=1}^n c_jx_j}$
+            }{
+            ${\displaystyle \forall i \in B, \quad \sum_{j=1}^n a_{ij}x_j \leq b_i}$
+            }{
+            $\forall j \in N, \quad x_j \geq 0$
+            }
+        \end{linearProgG}
+        }
+    \end{figure}
+    \begin{overlayarea}{\textwidth}{.3\textheight}
+        \begin{onlyenv}<1>
+            we write
+            \begin{itemize}
+            \item[\textbullet] $\bs{A}$ for the $(m, n)$ matrix of coefficients $(a_{ij})_{i, j}$
+            \item[\textbullet] $\bs{b}$ for the $m$-tuple of $b_i$s
+            \item[\textbullet] $\bs{c}$ for the $n$-tuple of $c_j$s.
+            \end{itemize}
+        \end{onlyenv}
+        \begin{onlyenv}<2->
+            The linear program $L$ in its standard form is determined by the data $(\bs{A}, \bs{b}, \bs{c})$. \uncover<3->{In order to recover the corresponding slack form we usually include the data $N$, $B$ of non-basic and basic sets as well as the constant $\nu$. Thus a slack form is assumed to be given by the data $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$.}
+        \end{onlyenv}
+    \end{overlayarea}
+\end{frame}
+
+\begin{frame}{Pivoting}
+    We are given input $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ and two indexes $e \in N$, $\ell \in B$ respectively corresponding to entering and leaving variables to the set of \textit{basic} variables $B$. Denote $(\widehat{N}, \widehat{B}, \widehat{\bs{A}}, \widehat{\bs{b}}, \widehat{\bs{c}}, \widehat{\nu})$ expected output. It is a linear program equivalent to $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$.
+    \begin{columns}
+        \begin{column}{.5\textwidth}
+            \begin{itemize}
+                \item[\textbullet]<2-> Express $x_e$ in terms of other variables in equation $\ell$
+                \item[\textbullet]<3-> Replace $x_e$ by previously obtained expression in linear constraints
+                \item[\textbullet]<4-> Replace $x_e$ by corresponding expression in the value function
+                \item[\textbullet]<5-> Update basic and none basic sets of variables.
+            \end{itemize}
+        \end{column}
+        \begin{column}{.5\textwidth}
+            \begin{overlayarea}{.8\textwidth}{.5\textheight}
+            \begin{onlyenv}<2>
+                \begin{tcolorbox}[
+                    enhanced,
+                    parbox = false,
+                    colback = mLightBrown!10!white,
+                    colframe = mLightBrown,
+                    arc = 0mm,
+                    ]
+                    \[
+                    \widehat{b}_e = \frac{b_\ell}{a_{\ell e}} \quad
+                    \text{and} \quad \widehat{a}_{e\ell} = \frac{1}{a_{\ell e}}
+                    \]
+                    for all $j \neq e$
+                    \[
+                    \widehat{a}_{ej} = \frac{a_{\ell j}}{a_{\ell e}}
+                    \]
+                    \end{tcolorbox}
+            \end{onlyenv}
+            \begin{onlyenv}<3>
+                \begin{tcolorbox}[
+                    enhanced,
+                    parbox = false,
+                    colback = mLightBrown!10!white,
+                    colframe = mLightBrown,
+                    arc = 0mm,
+                    ]
+                For all $i \in B \setminus \{\ell\}$
+                \[
+               \widehat{b}_i = b_i - a_{ie}\widehat{b}_e
+                \]
+                \[
+                \widehat{a}_{i\ell} = -a_{ie}\widehat{a}_{e\ell}
+                \]
+                for all $j \neq e$
+                \[
+                \widehat{a}_{ij}  = a_{ij} - a_{ie}\widehat{a}_{ej}
+                \]
+                \end{tcolorbox}
+            \end{onlyenv}
+            \begin{onlyenv}<4>
+                \begin{tcolorbox}[
+                    enhanced,
+                    parbox = false,
+                    colback = mLightBrown!10!white,
+                    colframe = mLightBrown,
+                    arc = 0mm,
+                    ]
+                \[
+                \widehat{\nu} = \nu + c_e\widehat{b}_e \quad  \text{and}\quad \widehat{c}_{\ell} = -c_e\widehat{a}_{e\ell}
+                \]
+                for all $j \neq e$
+                \[
+                \widehat{c}_{j}  = c_j - c_e\widehat{a}_{ej}
+                \]
+            \end{tcolorbox}
+            \end{onlyenv}
+            \begin{onlyenv}<5>
+                \begin{tcolorbox}[
+                    enhanced,
+                    parbox = false,
+                    colback = mLightBrown!10!white,
+                    colframe = mLightBrown,
+                    arc = 0mm,
+                    ]
+                \[
+                    \widehat{N}  = \big(N \setminus e \big) \cup \{\ell\}
+                \]
+                \[
+                    \widehat{B}  = \big(B \setminus \ell \big) \cup \{e\}
+                \]
+            \end{tcolorbox}
+            \end{onlyenv}
+        \end{overlayarea}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Pivot Function}
+    \setlength\columnseprule{.1pt}
+    \begin{multicols}{2}
+
+    \small{
+    \begin{algorithmic}[1]
+       \Function{Pivot}{$N, B, \bs{A}, \bs{b}, \bs{c}, \nu, e, l$}
+            \State let $\widehat{\bs{A}}$ be an $(m, n)$ matrix
+            \State $\widehat{b}_e = \frac{b_\ell}{a_{\ell e}}$
+            \ForAll{$j \in N \setminus \{e\}$}
+                \State $\widehat{a}_{ej} = \frac{a_{\ell j}}{a_{\ell e}}$
+            \EndFor
+            \State $\widehat{a}_{e\ell} = \frac{1}{a_{\ell e}}$
+            \ForAll{$i \in B \setminus \{\ell\}$}
+                \State $\widehat{b}_i = b_i - a_{ie}\widehat{b}_e$
+                \ForAll{$j i\in N \setminus \{e\}$}
+                    \State $\widehat{a}_{ij} = a_{ij} - a_{ie}\widehat{a}_{ej}$
+                \EndFor
+                \State $\widehat{a_{i\ell}} = -a_{ie}\widehat{a}_{e\ell}$
+            \EndFor
+            \State $\widehat{\nu} = \nu + c_e\widehat{b}_e$
+            \ForAll{$j \in N \setminus \{e\}$}
+                \State $\widehat{c}_{j} = c_j - c_e\widehat{a}_{ej}$
+            \EndFor
+            \State $\widehat{c_{\ell}} = -c_e\widehat{a}_{e\ell}$
+            \State $\widehat{N} = \big(N \setminus e \big) \cup \{\ell\}$
+            \State $\widehat{B} = \big(B \setminus \ell \big) \cup \{e\}$
+            \State \Return $(\widehat{N}, \widehat{B}, \widehat{\bs{A}}, \widehat{\bs{b}}, \widehat{\bs{c}}, \widehat{\nu})$
+       \EndFunction
+       \Statex
+      \end{algorithmic}
+      }
+    \end{multicols}
+\end{frame}
+
+\begin{frame}{Pivot Function}
+    \begin{rem}
+        The Pivot Function has better not have any entries $e$, $\ell$ such that $a_{e\ell}$. We shall ensure this is never the case when Pivot is used.
+    \end{rem}
+    The \textit{basic solution} of the output $(\widehat{N}, \widehat{B}, \widehat{\bs{A}}, \widehat{\bs{b}}, \widehat{\bs{c}}, \widehat{\nu})$ is given by
+    \begin{align*}
+        \forall i \in \widehat{N}, \quad x_i & = 0 \\
+        \forall i \in \widehat{B}, \quad x_i & = \widehat{b}_i
+    \end{align*}
+    Replacing each $\widehat{b}_i$ by its corresponding expression in terms of coefficients of $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$, we get
+    \begin{align*}
+        \forall i \in \widehat{N}, \quad x_i & = 0 \\
+        \forall i \in \widehat{B}\setminus \{e\}, \quad x_i & = b_i - a_{ie}\frac{b_\ell}{a_{\ell e}} \\
+        x_e = \frac{b_\ell}{a_{\ell e}}
+    \end{align*}
+\end{frame}
+
+\section{Facing Unboundedness}
+
+\begin{frame}{Testing Boundedness}
+    Let $L$ be the following linear program in standard form
+    \begin{figure}
+        \begin{linearProgG}{
+            ${\displaystyle z = \nu + \sum_{j=1}^n c_jx_j}$
+            }{
+            ${\displaystyle \forall i \in B, \quad \sum_{j=1}^n a_{ij}x_j \leq b_i}$
+            }{
+            $\forall j \in N, \quad x_j \geq 0$
+            }
+        \end{linearProgG}
+    \end{figure}
+    \pause
+    \begin{halfshyblock}{Fact}
+        If there was an index $j$ such that $c_j > 0$ and all coefficients of $x_{j}$ in the linear constraints were non-positive then $L$ is unbounded.
+    \end{halfshyblock}
+\end{frame}
+
+\begin{frame}{Testing Boundedness}
+    Using the previous fact we can test, each time we call Pivot, that the input linear program \alert{doesn't} satisfy the previous property :
+    \begin{quote}
+      There is an index $j$ such that $c_j > 0$ and all coefficients of $x_j$ in the linear constraints are non-positive.
+    \end{quote}
+
+    This is a necessary healthy check, but there is yet no garantee that this condition is fullfilled when the linear program we work with is unbounded. We will not have the needed machinery to properly answer this question untill we introduce some duality. For the time being we'll have to accept that the naive check at hand will be enough.
+\end{frame}
+
+\section{The Simplex Algorithm : Second Try}
+
+\begin{frame}{The Simplex Algorithm \emph{Restricted}}
+    \small{
+      \begin{algorithmic}[1]
+       \Require $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ a linear program \alert{having feasible basic solution}
+       \Ensure a basic feasible solution having \textit{a priori} a maximal objetive value
+       \begin{multicols}{2}
+       \Function{Simplex}{$N, B, \bs{A}, \bs{b}, \bs{c}, \nu$}
+       \State Let $\partial$ and $x$ be zero vectors of length $n$
+       \While{$\exists$ index $j \in N$ such that $c_j > 0$}
+            \State choose $e \in N$ for which $c_e > 0$
+            \ForAll{index $i \in B$}
+                \If{$a_{ie} > 0$}
+                    \State $\partial_i = \frac{b_i}{a_{ie}}$
+                \Else
+                    \State $\partial_i = \infty$
+                \EndIf
+            \EndFor
+            \State choose $\ell \in B$ that minimizes $\partial_i$
+            \If{$\partial_\ell = \infty$}
+                \State \textbf{raise exception} \textit{Unbounded}
+            \Else
+                \State $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu) =$ \Call{Pivot}{$N, B, \bs{A}, \bs{b}, \bs{c}, \nu, e, \ell$}
+            \EndIf
+        \EndWhile
+        \ForAll{$ i \in \{1, \ldots, n\}$}
+            \If{$i \in B$}
+                \State $x_i = b_i$
+            \EndIf
+        \EndFor
+        \State \Return{$(x_1, \ldots, x_n)$}
+    \EndFunction
+    \end{multicols}
+     \end{algorithmic}
+     }
+\end{frame}
+
+\begin{frame}{The Simplex Algorithm : First Validity Checks}
+    There are three things we need to check in order to temporarily accept the previous version of the simplex algorithm
+    \begin{enumerate}
+        \item after each call to \textsc{Pivot} the linear program we get has feasible basic solution
+        \item \textcolor<3>{lightgray}{the objective value does not decrease while looping} \only<2->{\textcolor{orange}{\textbf{(We choose it that way!)}}}
+    \end{enumerate}
+    and a a last point to \textit{understand} :
+    \begin{enumerate}
+        \item[3.] what does it mean for \textsc{Simplex} not to terminate? how can we deal with it?
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{Feasability of the basic solution after each call for \textsc{Pivot}}
+    \setlength\columnseprule{.1pt}
+    \begin{multicols}{2}
+        Recall we are given as input the program $(N, B, \bs{A}, \bs{B}, \bs{c}, \nu)$ whose basic solution is feasible, i.e. all $b_i$s are non-negative. We show that the output $(\widehat{N}, \widehat{B}, \widehat{\bs{A}}, \widehat{\bs{b}}, \widehat{\bs{c}}, \widehat{\nu})$ of \textsc{Pivot} (with entering and leaving indexes $e$ and $\ell$) has feasible basic solution as well. Since we assume \textsc{Pivot} is called, the coefficient $a_{\ell e} \geq 0$.
+
+        \pause
+        We've already seen that
+        \[
+        \widehat{b}_e = b_\ell / a_{\ell e}
+        \]
+        and for all $i \in B\setminus \{\ell\}$
+        \[
+        \widehat{b}_i = b_i - a_{ie}\widehat{b}_e.
+        \]
+        Since $b_\ell$ and $a_{\ell e}$ are non-negative $\widehat{b}_e$ is non-negative as well. In case $a_{ie} \leq 0$, then $\widehat{b}_e$ is positive because all other involved quantities are positive. \pause When $a_{ie} > 0$ notice that \textsc{Simplex} choses $\ell$ in such a way that, for all $i  \in B$ with $a_{ie} > 0$,
+        \[
+        b_\ell/a_{\ell e} \leq b_i/a_{i e}.
+        \]
+        Thus, for all $i \in B$ with $a_{ie} > 0$,
+        \[
+        \widehat{b}_i \alt<4>{\textcolor{orange}{~\geq b_i - a_{ie}b_i/a_{ie} = 0}}{~ = b_i-a_{ie}b_\ell/a_{\ell e}}
+        \]
+    \end{multicols}
+\end{frame}
+
+\begin{frame}{Cycling}
+    Each time we step into the \texttt{while} loop of the \textsc{Simplex} algorithm we either \textit{increase (or keep constant)} the objective value or discover the linear program is \textit{unbounded}. A priori, \textsc{Simplex} might run on indefinitely among different slack forms without ever increasing the objective value. We are going to make clear that such behaviour can be either detected or avoided.
+    \begin{prop}[\textbf{C}]
+        Let $L$ be a linear program given by the data $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ where $\bs{A}$ is an $(m, n)$ matrix then if \textsc{Simplex} runs more than $\binom{n+m}{m}$ iterations it does cycle, i.e. it goes indefinitely among the same finite set of slack forms with same given objective value.
+    \end{prop}
+    \begin{rem}
+        This means that whenever \textsc{Simplex} runs more than $\binom{n+m}{m}$ times then one can return the current objective value and basic solution.
+    \end{rem}
+    \end{frame}
+
+    \begin{frame}{Cycling}
+        The proof of the above proposition is based on two facts :
+        \begin{itemize}
+            \item \textsc{Simplex} is deterministic, if we ever get back to a previously obtained slack form then we are going to go back through all the slack forms starting with this one, once again.
+            \item There is only a finite set of possible slack forms for the same given linear program.
+        \end{itemize}
+        The latter point is the only point we need to make clear.
+    \end{frame}
+
+    \begin{frame}{Cycling}
+        \begin{lem}[$\bs{B}$]
+            Let $L$ be a linear program given in standard form by $(\bs{A}, \bs{b}, \bs{c})$. A slack form of $L$ is determined by the choice of a set $B$ of basic variables.
+        \end{lem}
+        \pause
+        \setlength\columnseprule{.1pt}
+        \begin{multicols}{2}
+            \begin{demo}
+                Assume given two slack forms of $L$ with same basic sets (and thus same non-basic set) : $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ and $(N, B, \bs{A'}, \bs{b'}, \bs{c'}, \nu')$. \pause Forgetting about non-negativtiy constraints, substracting the linear constraints, we get the relations :
+                \[
+                0 = (\nu - \nu') + \sum_{i \in N} (c_j - c_j')x_j
+                \]
+                and for each $i \in B$
+                \[
+                0 = (b_i - b_i') - \sum_{j \in N} (a_{ij} - a_{ij}')x_j.
+                \]
+                \pause
+                It is now a simple exercise to prove that for each $i \in B$ and $j \in N$, $\nu = \nu'$, $b_i = b_i'$, $c_j = c_j'$ and $a_{ij} = a_{ij}'$.
+            \end{demo}
+        \end{multicols}
+    \end{frame}
+
+    \begin{frame}{Cycling}
+        \begin{prop}[\textbf{C}]
+            Let $L$ be a linear program given by the data $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ where $\bs{A}$ is an $(m, n)$ matrix then if \textsc{Simplex} runs more than $\binom{n+m}{n}$ iterations it does cycle, i.e. it goes indefinitely among the same finite set of slack forms with same given objective value.
+        \end{prop}
+        \begin{demo}
+            By lemma B, there are at most as many different slack forms as the number of possible choices of basic sets of variables. There are $\binom{m+n}{m}$ such choices. Thus if \textsc{Simplex} runs more iterations than $\binom{m+n}{m}$ then we already obtained twice the same slack form.
+        \end{demo}
+        \begin{rem}
+            Adding a counter to \textsc{Simplex} insures \textsc{Simplex} terminates.
+        \end{rem}
+            In practice we use a different solution, called \emph{Bland's rule} : each time we choose an index at lines 5 and 12 we choose the smallest possibile indices.
+    \end{frame}
+
+    \begin{frame}{Simplex Algorithm \textit{Restricted} | No Cycling version}
+        \small{
+      \begin{algorithmic}[1]
+       \Require $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ a linear program \alert{having feasible basic solution}
+       \Ensure a basic feasible solution having \textit{a priori} a maximal objetive value
+       \begin{multicols}{2}
+       \Function{Simplex}{$N, B, \bs{A}, \bs{b}, \bs{c}, \nu$}
+       \State Let $\partial$ and $x$ be zero vectors of length $n$
+       \While{$\exists$ index $j \in N$ such that $c_j > 0$}
+            \State choose smallest $e \in N$ for which $c_e > 0$
+            \ForAll{index $i \in B$}
+                \If{$a_{ie} > 0$}
+                    \State $\partial_i = \frac{b_i}{a_{ie}}$
+                \Else
+                    \State $\partial_i = \infty$
+                \EndIf
+            \EndFor
+            \State choose smallest $\ell \in B$ minimizing $\partial_i$
+            \If{$\partial_\ell = \infty$}
+                \State \textbf{raise exception} \textit{Unbounded}
+            \Else
+                \State $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu) =$ \Call{Pivot}{$N, B, \bs{A}, \bs{b}, \bs{c}, \nu, e, \ell$}
+            \EndIf
+        \EndWhile
+        \ForAll{$ i \in \{1, \ldots, n\}$}
+            \If{$i \in B$}
+                \State $x_i = b_i$
+            \EndIf
+        \EndFor
+        \State \Return{$(x_1, \ldots, x_n)$}
+    \EndFunction
+    \end{multicols}
+     \end{algorithmic}
+     }
+    \end{frame}
+
+    \begin{frame}
+        \centering
+        {\huge \textbf{That's it for today !}}
+
+    \end{frame}
+
+\end{document}

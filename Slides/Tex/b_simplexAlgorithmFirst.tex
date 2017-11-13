@@ -1,4 +1,4 @@
-\documentclass[32pt, aspectratio = 169]{beamer}
+\documentclass[aspectratio = 169]{beamer}
 
 \usepackage[utf8]{inputenc} % Character encoding.
 
@@ -95,10 +95,11 @@
   \end{prop}
   \begin{defn}
     We call \emph{interior} of a convex set $A$ the set of points
-    $x \in A$ for which there is a disk having a positive radius and
-    centered at $x$ contained in $A$. Any point of $A$ not satisfying
-    this condition is called a \emph{boundary point}. The
-    \emph{boundary} of $A$ is the set of boundary points.
+    $x \in A$ for which there is a \textit{disk} having a positive
+    radius and centered at $x$ contained in $A$. Any point of $A$ not
+    satisfying this condition is called a \emph{boundary point}. The
+    \emph{boundary} of $A$ is the set of boundary points (it can be
+    empty).
   \end{defn}
   When dealing with convex sets defined by linear constraints,
   boundary points are points of the hyperplanes defined by replacing
@@ -109,38 +110,69 @@
 \begin{frame}{Boundary Optimizes Linear Function}
   Recall that a function $f : A \to \R$ for a region $A$ in $\R^n$ is
   said to be \emph{bounded} if there is a positive real number $M$
-  such that : for all $x \in A$, $\Big|f(x)\Big| \leq M$.
+  such that : for all $x \in A$, $\big|f(x)\big| \leq M$.
   \begin{prop}
     Let $A$ be the region defined by the set of feasible solutions of
-    a linear program $L$. If the objective functional is
+    a linear program $L$. If the objective function is
     \textit{bounded} on $A$ then $L$ has an optimal objective value,
-    it is attained on the boundary of $A$.
+    it is attained on the boundary of $A$ (if not empty).
+  \end{prop}
+  The justification for this result says way more! 
+\end{frame}
+
+\begin{frame}{Extremal Points Optimize Linear Function}
+  Let $A$ be the feasible region of a linear program $L$ in standard
+  form. An \emph{extremal point} of A is a point $x$ for which any
+  \textit{disk} centered at $x$ doesn't contain any (open) line
+  segment centered at $x$ and fully contained in A. \pause Such points
+  are necessarily boundary points, they appear as intersections of as
+  many hyperplanes as dimension of program. \pause
+  \begin{prop}
+    Under previous assumptions, if the objective function of $L$ is
+    \textit{bounded} on $A$ then $L$ has an optimal objective value
+    which is attained at an extremal point of $A$ (if there are any).
     \end{prop}
 \end{frame}
 
+
 \begin{frame}
   \frametitle{Boundary Optimizes Linear Function | Naive Search}
-  %% TODO: Write down the intersection case, make a quick computation
-  %% of generic number of intersection points.
+  Let $L$ be a linear program of dimension $n$. A naive way to look
+  for optimal points is then to look for intersections of combinations
+  of any $n$ equations composing constraints of the linear
+  program. \pause Looking for one single such intersection means
+  solving a linear system having $n$ equations. 
+  \pause
+  \begin{halfshyblock}{Question}
+    Let $n$ be a positive integer. Consider the linear constraints
+    \[
+    \forall i \in \{1, \ldots, n\}, \quad 0 \leq x_i \leq 1.
+    \]
+    How many extremal points do the following constraints define?
+  \end{halfshyblock}
+  \pause 
+  As the example shows, complexity at worst grows exponentially. With
+  number of inequalities defining the constraints.
 \end{frame}
 
 \begin{frame}{Boundary Optimizes Linear Function | A Better Search}
   Rather than listing all potential optimal points, the \emph{simplex
-    algorithm} is a walk along boundary points of the feasible region
+    algorithm} is a walk along extremal points of the feasible region
   satisfying the fact :
   \begin{quotation}
-    A given step has higher or equal objective value than previous
-    step.
+    A given step returns a higher or equal objective value than
+    previous step.
   \end{quotation}
-  It has an initialization step, that we're going to keep on the side
-  for now. \pause We shall be working under the following assumption.
+  It has an initialization step, we're keeping on the side for
+  now by working under the following assumption: 
   \begin{alertblock}{Assumption}
     Given a linear program $L$ in \textit{standard} form, we assume
     the vector having only zero entries is a feasible solution of $L$.
   \end{alertblock}
-  In the following example, starting from the zero feasible solution
-  we're going to walk around the boundary of the feasible region to
-  look for an optimal value.
+  \pause 
+  In the following example, starting from the zero feasible
+  solution we're going to walk around the set of extremal points of
+  feasible region to look for an optimal value.
 \end{frame}
 
 \section{Simplex Algorithm : First Try}
@@ -156,7 +188,7 @@
         }{
           \systeme{x_3 = 5 - x_1 - x_2, x_4 = 3 + 2x_1 - x_2 }
         }{
-          $x_1, x_2, x_3, x_4 \geq 0$
+          $x_1$, $x_2$, $x_3$, $x_4 \geq 0$
         }
       \end{linearProg}
     \end{figure}
@@ -174,10 +206,10 @@
     \begin{columns}
         \begin{column}{.5\textwidth}
             \begin{onlyenv}<1
-              >The feasible slack solution of $(0, 0, 5, 3)$ has
+              >The feasible slack solution $(0, 0, 5, 3)$ has
               corresponding feasible standard solution the origin of
               the plane. To wander around the boundary of the feasible
-              region we have to choose which way to go; we either go
+              region we have to choose which way to go ; we either go
               vertically keeping $x_1$ to $0$ or horizontally keeping
               $x_2$ to $0$. Any choice is fine as long as we are
               increasing the objective value. We shall give a
@@ -188,95 +220,140 @@
             \begin{onlyenv}<2
               >
               \begin{figure}
-                \begin{linearProg}{
-                    maximize
-                  }{
-                    $x_1 + 2x_2$
-                  }{
-                    \systeme{x_3 = 5 - x_1 - x_2, x_4 = 3 + 2x_1 - x_2 }
-                  }{
-                    $x_1, x_2, x_3, x_4 \geq 0$  %% TODO: maths spacing
-                  }
-                \end{linearProg}
+                \small{
+                  \begin{linearProg}{
+                      maximize
+                    }{
+                      $x_1 + 2x_2$
+                    }{
+                      \systeme{x_3 = 5 - x_1 - x_2@(E_{*}), x_4 = 3 + 2x_1 - x_2 }
+                    }{
+                      $x_1$, $x_2$, $x_3$, $x_4 \geq 0$  
+                    }
+                  \end{linearProg}
+                }
               \end{figure}
-              $x_1$ is constrained by the first equation: increasing
-              $x_1$ indefinitely would violate non-negativity
-              constraints while no such constraints come from the
-              second equation. The highest possible value for $x_1$ is
-              thus obtained when $x_3$ is zero. The resulting feasible
-              solution is $(5, 0, 0, 13)$, of objective value
-              $5$. Corresponding solution of standard form is tight
-              for first constraint.
+              Variable $x_1$ is constrained by $E_1$: increasing it
+              indefinitely would violate non-negativity
+              constraints. No such constraints come from $E_2$. The
+              highest possible value for $x_1$ is thus obtained when
+              $x_3$ is $0$. Obtained solution is $(5, 0, 0, 13)$ of
+              objective value $5$. It forces first equation of initial
+              program tight.
             \end{onlyenv}
             \begin{onlyenv}<3
+              >
+              \begin{figure}
+                \small{
+                  \begin{linearProg}{
+                      maximize
+                    }{
+                      $x_1 + 2x_2$
+                    }{
+                      \systeme{x_3 = 5 - x_1 - x_2@(E_{*}), x_4 = 3 + 2x_1 - x_2 }
+                    }{
+                      $x_1$, $x_2$, $x_3$, $x_4 \geq 0$  
+                    }
+                  \end{linearProg}
+                }
+              \end{figure}
+              Solution $(0, 0, 5, 3)$ can be understood as setting
+              $x_1$ and $x_2$ to $0$. Solution $(5, 0, 0, 13)$ is
+              about doing so to $x_3$ and $x_2$. \pause The thing to
+              notice is that extremal points are exactly those for
+              which $2$ variables are set to $0$. \pause To keep
+              pattern \textit{set variables on the left to $0$} we're
+              going to exchange sides of $x_1$ and $x_3$ (variables
+              that entered into choice of walk).
+            \end{onlyenv}            
+            \begin{onlyenv}<4
               >To get the feasible solution $(5, 0, 0, 13)$ one can
-              express $x_1$ in the first equation in terms of the two
-              other variables. One then replaces $x_1$ elsewhere with
-              this expression. We get the equivalent program
+              express $x_1$ in $E_1$ in terms of the two other
+              variables. One then replaces $x_1$ elsewhere with this
+              expression. We get the equivalent program
                 \begin{figure}
-                \begin{linearProg}{
+                  \small{
+                    \begin{linearProg}{
                         maximize
-                        }{
+                      }{
                         $5 - x_3 + x_2$
-                        }{
-                        \systeme{x_1 = 5 - x_3 - x_2, x_4 = 13 - 2x_3 - 3x_2 }
-                        }{
+                      }{
+                        \systeme{x_1 = 5 - x_3 - x_2@(E_{*}), x_4 = 13 - 2x_3 - 3x_2 }
+                      }{
                         $x_1, x_2, x_3, x_4 \geq 0$
-                        }
-                \end{linearProg}
+                      }
+                    \end{linearProg}
+                  }
                 \end{figure}
                 Putting $x_3$ and $x_2$ to zero in both equation gives
                 back the expected feasible solution.
             \end{onlyenv}
-            \begin{onlyenv}<4-5
+            \begin{onlyenv}<5-6
                 >\alt<5>{
                 \textcolor{orange}{
                 \begin{figure}
-                \begin{linearProg}{
+                  \small{
+                    \begin{linearProg}{
                         maximize
-                        }{
+                      }{
                         $\dfrac{28}{3} - \dfrac{5}{3}x_3 - \dfrac{1}{3}x_4$
-                        }{
-                        \systeme{x_1 = 2/3 - (1/3)x_3 + (1/3) x_4, x_2 = 13/3 - (2/3)x_3 - (1/3)x_4 }
-                        }{
-                        $x_1, x_2, x_3, x_4 \geq 0$
-                        }
-                \end{linearProg}
+                      }{
+                        \systeme{x_1 = 2/3 - (1/3)x_3 + (1/3) x_4@(E_{*}), x_2 = 13/3 - (2/3)x_3 - (1/3)x_4 }
+                      }{
+                        $x_1$, $x_2$, $x_3$, $x_4 \geq 0$
+                      }
+                    \end{linearProg}
+                  }
                 \end{figure}
-                }
-                \vspace{-1em}
-                Playing the same previous trick using $x_2$ and the second equation we get the above equivalent linear program. Putting both $x_3$ and $x_4$ to zero, we get the feasible solution $(2/3, 13/3, 0, 0)$ which has objective value $28/3$.
-                }{
+              }
+              \vspace{-1em}              
+              Playing the same previous trick using $x_2$ and the
+              second equation we get the above equivalent linear
+              program. Putting both $x_3$ and $x_4$ to zero, we get
+              the feasible solution $(2/3, 13/3, 0, 0)$ which has
+              objective value $28/3$.  }{
                 \begin{figure}
-                \begin{linearProg}{
+                  \small{
+                    \begin{linearProg}{
                         maximize
-                        }{
+                      }{
                         $5 - x_3 + x_2$
-                        }{
-                        \systeme{x_1 = 5 - x_3 - x_2, x_4 = 13 - 2x_3 - 3x_2 }
-                        }{
-                        $x_1, x_2, x_3, x_4 \geq 0$
-                        }
-                \end{linearProg}
-                \end{figure}
-                One can hope to maximize this linear program by increasing $x_2$. Any increase in $x_3$ would decrease the objective value. The most restrictive equation for $x_2$ is the second, indeed one can only increase $x_2$ up to $13/3$ while in the second up to $5$.
-                }
+                      }{
+                        \systeme{x_1 = 5 - x_3 - x_2@(E_{*}), x_4 = 13 - 2x_3 - 3x_2 }
+                      }{
+                        $x_1$, $x_2$, $x_3$, $x_4 \geq 0$
+                      }
+                    \end{linearProg}
+                  }
+                \end{figure}                
+                One can hope to maximize this linear program by
+                increasing $x_2$. Any increase in $x_3$ would decrease
+                the objective value. The most restrictive equation for
+                $x_2$ is the second, indeed one can only increase
+                $x_2$ up to $13/3$ while in the second up to $5$.  }
             \end{onlyenv}
-            \begin{onlyenv}<6->
+            \begin{onlyenv}<7->
                 \begin{figure}
-                \begin{linearProg}{
+                  \small{
+                    \begin{linearProg}{
                         maximize
-                        }{
+                      }{
                         $\dfrac{28}{3} - \dfrac{5}{3}x_3 - \dfrac{1}{3}x_4$
-                        }{
-                        \systeme{x_1 = 2/3 - (1/3)x_3 + (1/3) x_4, x_2 = 13/3 - (2/3)x_3 - (1/3)x_4 }
-                        }{
-                        $x_1, x_2, x_3, x_4 \geq 0$
-                        }
-                \end{linearProg}
+                      }{
+                        \systeme{x_1 = 2/3 - (1/3)x_3 + (1/3) x_4@(E_{*}), x_2 = 13/3 - (2/3)x_3 - (1/3)x_4 }
+                      }{
+                        $x_1$, $x_2$, $x_3$, $x_4 \geq 0$
+                      }
+                    \end{linearProg}
+                  }
                 \end{figure}
                 \vspace{-1em}
-                We can't hope to increase the objective value. Any increase in the values of $x_3$ or $x_4$ would decrease the object value. The objectve function is maximal when both are zero. The corresponding maximal solution is $(2/3, 13/3, 0, 0)$ of objective value $28/3$.
+                We can't hope to increase the objective value
+                anymore. Any increase in the values of $x_3$ or $x_4$
+                would decrease the object value. The objectve function
+                is maximal when both are zero. The corresponding
+                maximal solution is $(2/3, 13/3, 0, 0)$ of objective
+                value $28/3$.
             \end{onlyenv}
         \end{column}
         \begin{column}{.5\textwidth}
@@ -298,7 +375,7 @@
                     \end{tikzpicture}
                 \end{figure}
                 \end{onlyenv}
-                \begin{onlyenv}<2-4>
+                \begin{onlyenv}<2-5>
                     \begin{figure}
                     \begin{tikzpicture}
                         \begin{axis}[
@@ -315,7 +392,7 @@
                     \end{tikzpicture}
                 \end{figure}
                 \end{onlyenv}
-                \begin{onlyenv}<5->
+                \begin{onlyenv}<6->
                     \begin{figure}
                     \begin{tikzpicture}
                         \begin{axis}[
@@ -351,7 +428,13 @@
             }
         \end{linearProgG}
     \end{figure}
-    where $(a_{ij})_{i, j}$ is an $(m, n)$ matrix. The set $N$ is the set $\{ 1, \ldots, n \}$ of indexes of variables, the one of $B$ is the set $\{ n+1, \ldots, n+m \}$ indexing linear constraints. The need for these two sets will be clear later on. Lastly, $(c_1, \ldots, c_n)$ is a vector of size $n$ while $(b_{n+1}, \ldots, b_{n+m})$ is one of size $m$.
+    where $(a_{ij})_{i, j}$ is an $(m, n)$ matrix. The set $N$ is the
+    set $\{ 1, \ldots, n \}$ of indexes of variables, the one of $B$
+    is the set $\{ n+1, \ldots, n+m \}$ indexing linear
+    constraints\footnote{The need for these two sets will be clear
+      later on.}.  The scalar $\nu$ was zero in our previous
+    examples. Lastly $(c_1, \ldots, c_n)$ is a vector of size $n$
+    while $(b_{n+1}, \ldots, b_{n+m})$ is one of size $m$.
 \end{frame}
 
 \begin{frame}{Notation and Terminology}
@@ -366,58 +449,93 @@
             }
         \end{linearProgG}
     \end{figure}
-    The set of variables on the left (and indexed by $B$) are called \emph{basic} variables. Variables on the left and indexed by $N$ are called \emph{non-basic} ones. The \emph{basic solution} of a linear program in slack form is the one obtained by putting all non-basic variables to zero. This is not, in general, a feasible solution of the linear program (but we'll learn to deal with it).
+    The set of variables (indexed by $B$) are called \emph{basic}
+    variables. Variables on the right (indexed by $N$) are called
+    \emph{non-basic} ones. The \emph{basic solution} of a linear
+    program in slack form is the one obtained by putting all non-basic
+    variables to zero. This is not, in general, a feasible solution ;
+    it might have negative entries.
 \end{frame}
 
 \begin{frame}{Practical Steps of the Simplex Algorithm}
-    The simplex algorithm is a procedure exchanging a basic variable with a non-basic one at each step. Recall that up so far we have been working under the following assumption:
-    \begin{alertblock}{Assumption}
-        The zero tuple is a feasible solution of the linear program in standard form. Equivalently, the \textit{basic solution} of the slack form of our linear program is a feasible solution.
-    \end{alertblock}
-    We shall take care of the general case later. It does build up on this case.
+  Linear programs having feasible basic solution are easier to deal
+  with. The ones having non-feasible basic solution need a work
+  around. The assumption under which we've been working can be
+  rephrased as:
+  \begin{alertblock}{Assumption (BF)}
+    The \textit{basic solution} of initial linear program in
+    standard form is a feasible solution.
+  \end{alertblock}
+  We first treat programs satisfying (\emph{BF}) before going onto
+  general case.
 \end{frame}
 
 \begin{frame}{Practical Steps of the Simplex Algorithm}
-    Here is the main steps of the simplex algorithm
-    \begin{itemize}
-        \item[\textbullet] Choose a non-basic variable $x_e$ increasing the objective value.
-        \item[\textbullet] Use the most restrictive constraint $\ell$ on $x_e$ to express $x_e$ in terms of the remaining variables.
-        \item[\textbullet] Replace $x_e$ in remaining linear equalities and linear functional by the expression previously obtained. The variable $x_e$ becomes a basic variable while $x_\ell$ becomes non-basic.
-        \item[\textbullet] Putting all non-basic variables to zero we get a tuple whose first $n$ entries are a feasible solution of the linear program we started with.
-        \item[\textbullet] Repeat previous steps until there is no room for increasing the objective value.
-    \end{itemize}
+  The simplex algorithm is a procedure exchanging a basic variable
+  with a non-basic one at each step. \pause Here is the main steps of
+  the simplex algorithm in case (\emph{BF}) is satisfied.
+  \begin{itemize}
+  \item<2->[\textbullet] 
+    Choose a non-basic variable $x_e$ increasing the objective
+    value.
+  \item<3->[\textbullet] 
+    Use the most restrictive constraint $\ell$ on $x_e$ to
+    express $x_e$ in terms of the remaining variables.
+  \item<4->[\textbullet] 
+    Replace $x_e$ in remaining linear equalities and linear
+    functional by the expression previously obtained. The
+    variable $x_e$ becomes a basic variable while $x_\ell$
+    becomes non-basic.
+  \item<5->[\textbullet] 
+    Putting all non-basic variables to zero we get a tuple whose
+    first $n$ entries are a feasible solution of the linear
+    program we started with.
+  \item<6->[\textbullet] 
+    Repeat previous steps until one cannot increase objective
+    value anymore.
+  \end{itemize}
 \end{frame}
 
-\begin{frame}{Practical Steps of the Simplex Algorithm}
-    The previous steps are precisely what we've been doing while wandering around the boundary of our case. This approach does however exceed the $2$-dimensional case.
-    \begin{halfshyblock}{A $3$-dimensional case}
-        Following previous steps try solving the linear program
-         \begin{figure}
-        \begin{linearProg}{
-            maximize
-            }{
-            $3x_1 + x_2 + 2x_3 $
-            }{
-            \systeme{x_1 + x_2 + 3x_3 \leq 30, 2x_1 + x_2 + 5x_3 \leq 24, 4x_1 + x_2 + x_3 \leq 36}
-            }{
-            $x_1, x_2, x_3 \geq 0 $
-            }
-        \end{linearProg}
-    \end{figure}
-    \end{halfshyblock}
-\end{frame}
 \begin{frame}{A Finishing Blow about Boundedness}
-    Notice that there is no garantee that the previous algorithm would get you a maximal solution in general. We do know that, if the linear functional is bounded on the feasible region, then there is a maximum attained at the boundary of this region. But there are cases when the linear functional is not bounded on the feasible region.
-    \begin{halfshyblock}{Unboundedness}
-        Can you find a linear program which is not bounded?
-    \end{halfshyblock}
+  Notice that there is no garantee that the previous algorithm would
+  get you a maximal solution in general. We do know that, if the
+  objective function is bounded on the feasible region, then there is
+  a maximum attained at the boundary of this region. But there are
+  cases when the objective function is not bounded on the feasible
+  region.
+  \begin{halfshyblock}{Unboundedness}
+    Can you find a linear program which is not bounded?
+  \end{halfshyblock}
+\end{frame}
+
+\begin{frame}{Practical Steps of the Simplex Algorithm}    
+  The previous steps are precisely what we've been doing while
+  wandering around the boundary of our dummy example. This approach
+  does however exceed the $2$-dimensional case.
+  \begin{halfshyblock}{A $3$-dimensional case}
+    Following previous steps try solving the linear program
+    \begin{figure}
+      \begin{linearProg}{
+          maximize
+        }{
+          $3x_1 + x_2 + 2x_3 $
+        }{
+          \systeme{x_1 + x_2 + 3x_3 \leq 30, 2x_1 + x_2 + 5x_3 \leq 24, 4x_1 + x_2 + x_3 \leq 36}
+        }{
+          $x_1, x_2, x_3 \geq 0 $
+        }
+      \end{linearProg}
+    \end{figure}
+  \end{halfshyblock}
 \end{frame}
 
 \begin{frame}
   \begin{center}
     {\huge \textbf{That's it for today}}
-   \end{center}
- \end{frame}
+  \end{center}
+\end{frame}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

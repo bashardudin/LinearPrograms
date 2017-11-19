@@ -1,4 +1,4 @@
-\documentclass[32pt, aspectratio = 169]{beamer}
+\documentclass[aspectratio = 169]{beamer}
 
 \usepackage[utf8]{inputenc} % Character encoding.
 
@@ -34,70 +34,152 @@
 \end{frame}
 
 \begin{frame}{Where We Stand, What We Face}
-    Working out a (still vague) procedure we've managed to find optimal solutions for simple examples of linear programs. Unfortunately, this heuristic is far from being satisfactory. Given a linear program, here is what we're missing :
+  Working out a vague procedure we've managed to find supposedly
+  optimal solutions for simple examples of linear programs (solutions
+  were optimal, but we have no mean to know that for a fact).  This
+  heuristic is far from being satisfactory though : given a linear
+  program $L$, here is what we're still missing :
     \begin{itemize}
-        \item[\textcolor<2>{lightgray}{\textbullet}] \textcolor<2>{lightgray}{We have no way of testing if $L$ is feasible, i.e. if it has at least a feasible solution}
-        \item[\textcolor<2>{lightgray}{\textbullet}] \textcolor<2>{lightgray}{Assuming $L$ is feasible how can we tackle the case when the basic solution is not feasible?}
-        \item[\textbullet] How can we check if $L$ is unbounded?
-        \item[\textbullet] Does the procedure we worked out even terminate in general?
-        \item[\textcolor<2>{lightgray}{\textbullet}] \textcolor<2>{lightgray}{If it does terminate with a finite objective value, is it an optimal one?}
+        \item[\textcolor<6>{lightgray}{\textbullet}]<1->
+          \textcolor<6>{lightgray}{We have no way of testing if $L$ is
+            feasible, i.e. if it has at least a feasible solution}
+        \item[\textcolor<6>{lightgray}{\textbullet}]<2->
+          \textcolor<6>{lightgray}{How can we tackle the case when the
+            basic solution is not feasible?}
+        \item[\textbullet]<3->
+          How can we check if $L$ is unbounded?
+        \item[\textbullet]<4->
+          Does the procedure we worked out even terminate in general?
+        \item[\textcolor<6>{lightgray}{\textbullet}]<5->
+          \textcolor<6>{lightgray}{Do we get an optimal objective
+            value if procedure terminates?}
     \end{itemize}
 \end{frame}
 
 \section{Pivoting}
 
-\begin{frame}{Pivoting}
-    In order to answer both previous questions we'll need to properly write down involved algorithms. Given the linear program $L$ in standard form
-    \begin{figure}
-        \alt<3>{
+\begin{frame}{Pivoting | Fixing Notation}
+  In order to answer both previous questions we'll need to properly
+  write down involved algorithms. Consider the linear program $L$
+  \begin{figure}
+    \alt<4>{
+      \textcolor{orange}{
         \begin{linearProgG}{
-            ${\displaystyle z = \nu + \sum_{j=1}^n c_jx_j}$
-            }{
-            ${\displaystyle \forall i \in B, \quad x_i = b_i - \sum_{j=1}^n a_{ij}x_j}$
-            }{
+            ${\displaystyle z - \sum_{j=1}^n c_jx_j} = \nu$
+          }{
+            ${\displaystyle \forall i \in \{1, \ldots, m\}, \quad \sum_{j=1}^n a_{ij}x_j + x_{i+m} = b_i}$
+          }{
             $\forall j \in N\cup B, \quad x_j \geq 0$
-            }
+          }
         \end{linearProgG}
-        }{
+      }
+    }{
+      \alt<3>{
         \begin{linearProgG}{
             ${\displaystyle z = \nu + \sum_{j=1}^n c_jx_j}$
-            }{
-            ${\displaystyle \forall i \in B, \quad \sum_{j=1}^n a_{ij}x_j \leq b_i}$
-            }{
-            $\forall j \in N, \quad x_j \geq 0$
-            }
+          }{
+            ${\displaystyle \forall i \in \{1, \ldots m \}, \quad x_{i+m} = b_i - \sum_{j=1}^n a_{ij}x_j}$
+          }{
+            $\forall j \in N\cup B, \quad x_j \geq 0.$
+          }
         \end{linearProgG}
-        }
+      }{
+        \begin{linearProgG}{
+            ${\displaystyle z = \nu + \sum_{j=1}^n c_jx_j}$
+          }{
+            ${\displaystyle \forall i \in \{1, \ldots, m\}, \quad \sum_{j=1}^n a_{ij}x_j \leq b_i}$
+          }{
+            $\forall j \in N, \quad x_j \geq 0$
+          }
+        \end{linearProgG}
+      }
+    }
     \end{figure}
     \begin{overlayarea}{\textwidth}{.3\textheight}
         \begin{onlyenv}<1>
-            we write
+          We write
             \begin{itemize}
-            \item[\textbullet] $\bs{A}$ for the $(m, n)$ matrix of coefficients $(a_{ij})_{i, j}$
-            \item[\textbullet] $\bs{b}$ for the $m$-tuple of $b_i$s
-            \item[\textbullet] $\bs{c}$ for the $n$-tuple of $c_j$s.
+            \item[\textbullet]
+              $\bs{A}$ for the $(m, n)$ matrix of coefficients
+              $\big(a_{ij}\big)_{\substack{1 \leq i \leq m \\ 1 \leq j \leq n}}$
+            \item[\textbullet]
+              $\bs{b}$ for the $m$-tuple $(b_1, \ldots, b_m)$
+            \item[\textbullet]
+              $\bs{c}$ for the $n$-tuple $(c_1, \ldots, c_n)$.
             \end{itemize}
+            Notice that $\nu$ is the objective value of the basic
+            solution.
         \end{onlyenv}
-        \begin{onlyenv}<2->
-            The linear program $L$ in its standard form is determined by the data $(\bs{A}, \bs{b}, \bs{c})$. \uncover<3->{In order to recover the corresponding slack form we usually include the data $N$, $B$ of non-basic and basic sets as well as the constant $\nu$. Thus a slack form is assumed to be given by the data $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$.}
+        \begin{onlyenv}<2>
+          The linear program $L$ in its standard form is determined by
+          the data $(\bs{A}, \bs{b}, \bs{c}, \nu)$. Initial program
+          has $\nu = 0$ in general.
+        \end{onlyenv}
+        \begin{onlyenv}<3->
+          To encode the slack form we include the data $N$, $B$ of
+          non-basic and basic sets. A slack form is thus given by the
+          data $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$. The set $N$ is
+          initialized at $\{1, \ldots, n\}$ and $B$ to
+          $\{n+1, \ldots, n+m\}$. \pause[4] \textcolor{orange}{To get
+            closer to a standard way of writing a linear system, we
+            slightly modify presentation of slack form.}
         \end{onlyenv}
     \end{overlayarea}
 \end{frame}
 
-\begin{frame}{Pivoting}
-    We are given input $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ and two indexes $e \in N$, $\ell \in B$ respectively corresponding to entering and leaving variables to the set of \textit{basic} variables $B$. Denote $(\widehat{N}, \widehat{B}, \widehat{\bs{A}}, \widehat{\bs{b}}, \widehat{\bs{c}}, \widehat{\nu})$ expected output. It is a linear program equivalent to $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$.
+\begin{frame}
+  \frametitle{Pivoting | Tableau of a Linear Program}
+  Linear constraints of $L$ in slack form have an $(m, n+m)$ matrix
+  $\underline{\bs{A}}$ given by concatenating $\bs{A}$ and $\bs{I}_m$
+  along rows of $\bs{A}$. The \emph{tableau} $T$ of linear program $L$
+  is obtained by
+  \begin{itemize}
+  \item<2-> concatenating $\underline{\bs{A}}$ and $b^T$
+    along rows of $A$
+  \item<3-> concatenate result with the vector
+    $(-c_1, \ldots, -c_n, 0, \ldots 0)$ of size $n+m$ along columns of
+    $\bs{A}$.
+  \end{itemize}
+  \pause[4]
+  \begin{figure}
+    \begin{tabular}{c|ccc|cccc|c|}
+       & \alert{$\bs{x_1}$} & \alert{$\cdots$} & \alert{$\bs{x_n}$} & \alert{$\bs{x_n}$} & \alert{$\bs{x_{n+1}}$} & \alert{$\cdots$} & \alert{$\bs{x_{n+m}}$} &  \\
+      \hline
+       & $-c_1$ & $\cdots$ & $-c_n$ & $0$ & $0$ & $\cdots$ & $0$ & $\nu$ \\
+      \hline
+      \alert{$\bs{n+1}$} & $a_{11}$ & $\cdots$ & $a_{1n}$ & $1$ & $0$ & $\cdots$ & $0$ & $b_1$ \\
+      \alert{$\bs{n+2}$}& $a_{21}$ & $\cdots$ & $a_{2n}$ & $0$ & $1$ & $\cdots$ & $0$ & $b_2$ \\
+      \alert{$\vdots$}& $\vdots$ & $\ddots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\ddots$ & $\vdots$ & $\vdots$ \\
+      \alert{$\bs{n+m}$} & $a_{m1}$ & $\cdots$  & $a_{mn}$  & $0$ & $\cdots$ & $\cdots$ & $1$ & $b_m$
+    \end{tabular}
+  \end{figure}
+  The tableau $T$ is of shape $(m+1, n + m + 1)$.
+  \end{frame}
+
+\begin{frame}[fragile]{Pivoting}
+  We are given input $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ and two
+  indexes $e \in N$, $l\in B$ respectively corresponding to
+  entering and leaving variables to and from the set of \textit{basic}
+  variables $B$.
     \begin{columns}
         \begin{column}{.5\textwidth}
             \begin{itemize}
-                \item[\textbullet]<2-> Express $x_e$ in terms of other variables in equation $\ell$
-                \item[\textbullet]<3-> Replace $x_e$ by previously obtained expression in linear constraints
-                \item[\textbullet]<4-> Replace $x_e$ by corresponding expression in the value function
-                \item[\textbullet]<5-> Update basic and none basic sets of variables.
+                \item[\textbullet]<2->
+                  Express $x_e$ in terms of other variables in
+                  equation $l$
+                \item[\textbullet]<3->
+                  Replace $x_e$ by previously obtained expression in
+                  linear constraints
+                \item[\textbullet]<4->
+                  Replace $x_e$ by corresponding expression in the
+                  value function
+                \item[\textbullet]<5->
+                  Update basic and none basic sets of variables.
             \end{itemize}
         \end{column}
         \begin{column}{.5\textwidth}
-            \begin{overlayarea}{.8\textwidth}{.5\textheight}
-            \begin{onlyenv}<2>
+            \begin{overlayarea}{.96\textwidth}{.45\textheight}
+            \begin{onlyenv}<2->
                 \begin{tcolorbox}[
                     enhanced,
                     parbox = false,
@@ -105,17 +187,12 @@
                     colframe = mLightBrown,
                     arc = 0mm,
                     ]
-                    \[
-                    \widehat{b}_e = \frac{b_\ell}{a_{\ell e}} \quad
-                    \text{and} \quad \widehat{a}_{e\ell} = \frac{1}{a_{\ell e}}
-                    \]
-                    for all $j \neq e$
-                    \[
-                    \widehat{a}_{ej} = \frac{a_{\ell j}}{a_{\ell e}}
-                    \]
+                    \small{
+                    \mint{python}{T[l, :] = (1/T[l, e])*T[l, :]}
+                    }
                     \end{tcolorbox}
             \end{onlyenv}
-            \begin{onlyenv}<3>
+            \begin{onlyenv}<3->
                 \begin{tcolorbox}[
                     enhanced,
                     parbox = false,
@@ -123,35 +200,13 @@
                     colframe = mLightBrown,
                     arc = 0mm,
                     ]
-                For all $i \in B \setminus \{\ell\}$
-                \[
-               \widehat{b}_i = b_i - a_{ie}\widehat{b}_e
-                \]
-                \[
-                \widehat{a}_{i\ell} = -a_{ie}\widehat{a}_{e\ell}
-                \]
-                for all $j \neq e$
-                \[
-                \widehat{a}_{ij}  = a_{ij} - a_{ie}\widehat{a}_{ej}
-                \]
+                    \small{
+                      \begin{minted}[autogobble]{python}
+                        if i != l:
+                          T[i, :] -= T[i, e]*T[l, :]
+                      \end{minted}
+                    }
                 \end{tcolorbox}
-            \end{onlyenv}
-            \begin{onlyenv}<4>
-                \begin{tcolorbox}[
-                    enhanced,
-                    parbox = false,
-                    colback = mLightBrown!10!white,
-                    colframe = mLightBrown,
-                    arc = 0mm,
-                    ]
-                \[
-                \widehat{\nu} = \nu + c_e\widehat{b}_e \quad  \text{and}\quad \widehat{c}_{\ell} = -c_e\widehat{a}_{e\ell}
-                \]
-                for all $j \neq e$
-                \[
-                \widehat{c}_{j}  = c_j - c_e\widehat{a}_{ej}
-                \]
-            \end{tcolorbox}
             \end{onlyenv}
             \begin{onlyenv}<5>
                 \begin{tcolorbox}[
@@ -161,12 +216,12 @@
                     colframe = mLightBrown,
                     arc = 0mm,
                     ]
-                \[
-                    \widehat{N}  = \big(N \setminus e \big) \cup \{\ell\}
-                \]
-                \[
-                    \widehat{B}  = \big(B \setminus \ell \big) \cup \{e\}
-                \]
+                    \small{
+                      \begin{minted}[autogobble]{python}
+                        N.insert(N.index(e), l).remove(e)
+                        B.insert(B.index(l), e).remove(l)
+                      \end{minted}
+                    }
             \end{tcolorbox}
             \end{onlyenv}
         \end{overlayarea}
@@ -174,56 +229,37 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}{Pivot Function}
-    \setlength\columnseprule{.1pt}
-    \begin{multicols}{2}
+\begin{frame}[fragile]{Pivoting | Full Function}
+     \small{
+      \begin{minted}[linenos]{python}
+        def pivot(N, B, T, e, l):
+            """Pivoting in linear programs.
 
-    \small{
-    \begin{algorithmic}[1]
-       \Function{Pivot}{$N, B, \bs{A}, \bs{b}, \bs{c}, \nu, e, l$}
-            \State let $\widehat{\bs{A}}$ be an $(m, n)$ matrix
-            \State $\widehat{b}_e = \frac{b_\ell}{a_{\ell e}}$
-            \ForAll{$j \in N \setminus \{e\}$}
-                \State $\widehat{a}_{ej} = \frac{a_{\ell j}}{a_{\ell e}}$
-            \EndFor
-            \State $\widehat{a}_{e\ell} = \frac{1}{a_{\ell e}}$
-            \ForAll{$i \in B \setminus \{\ell\}$}
-                \State $\widehat{b}_i = b_i - a_{ie}\widehat{b}_e$
-                \ForAll{$j i\in N \setminus \{e\}$}
-                    \State $\widehat{a}_{ij} = a_{ij} - a_{ie}\widehat{a}_{ej}$
-                \EndFor
-                \State $\widehat{a_{i\ell}} = -a_{ie}\widehat{a}_{e\ell}$
-            \EndFor
-            \State $\widehat{\nu} = \nu + c_e\widehat{b}_e$
-            \ForAll{$j \in N \setminus \{e\}$}
-                \State $\widehat{c}_{j} = c_j - c_e\widehat{a}_{ej}$
-            \EndFor
-            \State $\widehat{c_{\ell}} = -c_e\widehat{a}_{e\ell}$
-            \State $\widehat{N} = \big(N \setminus e \big) \cup \{\ell\}$
-            \State $\widehat{B} = \big(B \setminus \ell \big) \cup \{e\}$
-            \State \Return $(\widehat{N}, \widehat{B}, \widehat{\bs{A}}, \widehat{\bs{b}}, \widehat{\bs{c}}, \widehat{\nu})$
-       \EndFunction
-       \Statex
-      \end{algorithmic}
-      }
-    \end{multicols}
+            Pivots entering and leaving variables in linear
+            program given as tableau. Done in place.
+            """
+            T[l, :] = (1/T[l, e])*T[l, :]
+            for i in range(m+1):
+                if i != l:  # ugly
+                    T[i, :] -= T[i, e]*T[i, :]
+            N.insert(N.index(e), l).remove(e)
+            B.remove(B.index(l), e).remove(l)
+      \end{minted}
+    }
 \end{frame}
 
-\begin{frame}{Pivot Function}
-    \begin{rem}
-        The Pivot Function has better not have any entries $e$, $\ell$ such that $a_{e\ell}$. We shall ensure this is never the case when Pivot is used.
-    \end{rem}
-    The \textit{basic solution} of the output $(\widehat{N}, \widehat{B}, \widehat{\bs{A}}, \widehat{\bs{b}}, \widehat{\bs{c}}, \widehat{\nu})$ is given by
-    \begin{align*}
-        \forall i \in \widehat{N}, \quad x_i & = 0 \\
-        \forall i \in \widehat{B}, \quad x_i & = \widehat{b}_i
-    \end{align*}
-    Replacing each $\widehat{b}_i$ by its corresponding expression in terms of coefficients of $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$, we get
-    \begin{align*}
-        \forall i \in \widehat{N}, \quad x_i & = 0 \\
-        \forall i \in \widehat{B}\setminus \{e\}, \quad x_i & = b_i - a_{ie}\frac{b_\ell}{a_{\ell e}} \\
-        x_e = \frac{b_\ell}{a_{\ell e}}
-    \end{align*}
+\begin{frame}{Pivoting | Full Function}
+  \begin{itemize}
+  \item<1->
+    Indexes $e$ is an element of $N$ and $l$ one of $B$.
+  \item<2->
+    There better be no entries $e$, $l$ such that
+    \mintinline{python}{T[l, e] == 0}. We shall ensure this is never
+    the case when Pivot is used.
+  \item<3->
+    The objective value and basic solution of obtained linear program
+    can be read on last column to the right.
+  \end{itemize}
 \end{frame}
 
 \section{Facing Unboundedness}
@@ -240,190 +276,298 @@
             }
         \end{linearProgG}
     \end{figure}
-    \pause
     \begin{halfshyblock}{Fact}
-        If there was an index $j$ such that $c_j > 0$ and all coefficients of $x_{j}$ in the linear constraints were non-positive then $L$ is unbounded.
+      \begin{onlyenv}<1>
+        If there was an index $j$ such that $c_j > 0$ and all
+        coefficients of $x_{j}$ in the linear constraints were
+        non-positive then $L$ is unbounded.
+      \end{onlyenv}
+      \begin{onlyenv}<2-
+        >\alert{Equivalently, if there was a column in the program's tableau
+        having negative first entry and only non-positive ones
+        afterwards then $L$ is unbounded.}
+      \end{onlyenv}
     \end{halfshyblock}
 \end{frame}
 
 \begin{frame}{Testing Boundedness}
-    Using the previous fact we can test, each time we call Pivot, that the input linear program \alert{doesn't} satisfy the previous property :
+  Using the previous fact we can test, each time we call
+  \mintinline{python}{pivot}, that the input linear program
+  \alert{\emph{doesn't}} satisfy the previous property :
     \begin{quote}
-      There is an index $j$ such that $c_j > 0$ and all coefficients of $x_j$ in the linear constraints are non-positive.
+      There is an index $j$ such that $c_j > 0$ and all coefficients
+      of $x_j$ in the linear constraints are non-positive.
     \end{quote}
+    \pause
+    This is a necessary healthy check, but there is yet no garantee
+    that this condition is fullfilled when the linear program we work
+    with is unbounded. We will not have the needed machinery to
+    properly answer this question untill we introduce some
+    duality.
 
-    This is a necessary healthy check, but there is yet no garantee that this condition is fullfilled when the linear program we work with is unbounded. We will not have the needed machinery to properly answer this question untill we introduce some duality. For the time being we'll have to accept that the naive check at hand will be enough.
+    \pause
+    For the time being we'll have to accept that the naive
+    check at hand will be enough.
 \end{frame}
 
 \section{The Simplex Algorithm : Second Try}
 
-\begin{frame}{The Simplex Algorithm \emph{Restricted}}
-    \small{
-      \begin{algorithmic}[1]
-       \Require $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ a linear program \alert{having feasible basic solution}
-       \Ensure a basic feasible solution having \textit{a priori} a maximal objetive value
-       \begin{multicols}{2}
-       \Function{Simplex}{$N, B, \bs{A}, \bs{b}, \bs{c}, \nu$}
-       \State Let $\partial$ and $x$ be zero vectors of length $n$
-       \While{$\exists$ index $j \in N$ such that $c_j > 0$}
-            \State choose $e \in N$ for which $c_e > 0$
-            \ForAll{index $i \in B$}
-                \If{$a_{ie} > 0$}
-                    \State $\partial_i = \frac{b_i}{a_{ie}}$
-                \Else
-                    \State $\partial_i = \infty$
-                \EndIf
-            \EndFor
-            \State choose $\ell \in B$ that minimizes $\partial_i$
-            \If{$\partial_\ell = \infty$}
-                \State \textbf{raise exception} \textit{Unbounded}
-            \Else
-                \State $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu) =$ \Call{Pivot}{$N, B, \bs{A}, \bs{b}, \bs{c}, \nu, e, \ell$}
-            \EndIf
-        \EndWhile
-        \ForAll{$ i \in \{1, \ldots, n\}$}
-            \If{$i \in B$}
-                \State $x_i = b_i$
-            \EndIf
-        \EndFor
-        \State \Return{$(x_1, \ldots, x_n)$}
-    \EndFunction
-    \end{multicols}
-     \end{algorithmic}
-     }
+\begin{frame}[fragile]{The Simplex Algorithm \emph{Restricted}}
+  \begin{overlayarea}{1.1\textwidth}{.75\textheight}
+  \setlength{\columnsep}{-10pt}
+  \begin{multicols}{2}
+    \scriptsize{
+      \begin{minted}[autogobble, linenos, breaklines]{python}
+        # Under construction function!
+        def _simplex(N, B, T):
+            """Restricted simplex algorithm
+
+            Runs simplex algorithm on basic feasible
+            linear program in slack form.
+
+            Args:
+              N, B (list[int]): lists of non-basic
+              and basic variables.
+              T (ndarray[float]): numpy array for
+              tableau of linear program.
+            Output:
+              (ndarray[float]) vector tail of which
+              is maximal objective value, rest is
+              optimal point.
+            """
+            m, margins = len(B), dict()
+            aug_var = [i for i in N if T[0, i] < 0]
+            while aug_var:
+              e = random.choice(augmenting_var)
+              for i in range(m):
+                if T[i, e] > 0:
+                  margins[B[i]] = T[i, -1]/T[i, e]
+              if not margins:
+                raise Exception("Unbounded LP")
+              min_margin = min(margins.values())
+              minima = [i for i in margins\
+                        if margins[i] == min_margin]
+              l = random.choice(minima)
+              pivot(N, B, T, e, l)
+              aug_var = [i for i in N if T[0, i] < 0]
+            return T[:, -1]
+      \end{minted}
+    }
+  \end{multicols}
+  \end{overlayarea}
 \end{frame}
 
 \begin{frame}{The Simplex Algorithm : First Validity Checks}
-    There are three things we need to check in order to temporarily accept the previous version of the simplex algorithm
+  There are three things we need to check in order to temporarily
+  accept the previous version of the simplex algorithm
     \begin{enumerate}
-        \item after each call to \textsc{Pivot} the linear program we get has feasible basic solution
-        \item \textcolor<3>{lightgray}{the objective value does not decrease while looping} \only<2->{\textcolor{orange}{\textbf{(We choose it that way!)}}}
+        \item
+          after each call to \mintinline{python}{pivot} the linear
+          program we get has feasible basic solution
+        \item
+          \textcolor<3>{lightgray}{the objective value does not
+            decrease while looping}
+          \only<2->{\textcolor{orange}{\textbf{(We choose it that
+                way!)}}}
     \end{enumerate}
     and a a last point to \textit{understand} :
     \begin{enumerate}
-        \item[3.] what does it mean for \textsc{Simplex} not to terminate? how can we deal with it?
+        \item[3.]
+          what does it mean for \mintinline{python}{_simplex} not to terminate? how
+          can we deal with it?
     \end{enumerate}
 \end{frame}
 
-\begin{frame}{Feasability of the basic solution after each call for \textsc{Pivot}}
+\begin{frame}[fragile]{Feasability of the basic solution after each call for \mintinline{python}{pivot}}
     \setlength\columnseprule{.1pt}
     \begin{multicols}{2}
-        Recall we are given as input the program $(N, B, \bs{A}, \bs{B}, \bs{c}, \nu)$ whose basic solution is feasible, i.e. all $b_i$s are non-negative. We show that the output $(\widehat{N}, \widehat{B}, \widehat{\bs{A}}, \widehat{\bs{b}}, \widehat{\bs{c}}, \widehat{\nu})$ of \textsc{Pivot} (with entering and leaving indexes $e$ and $\ell$) has feasible basic solution as well. Since we assume \textsc{Pivot} is called, the coefficient $a_{\ell e} \geq 0$.
+      Input is an LP $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ having
+      feasible basic solution, i.e. \mintinline{python}{T[1:, -1]} is
+      non-negative. We show effect of \mintinline{python}{pivot}
+      leaves an LP with feasible basic solution as well. Since
+      \mintinline{python}{pivot} is called, \mintinline{python}{T[l, e] > 0}.
 
-        \pause
-        We've already seen that
-        \[
-        \widehat{b}_e = b_\ell / a_{\ell e}
-        \]
-        and for all $i \in B\setminus \{\ell\}$
-        \[
-        \widehat{b}_i = b_i - a_{ie}\widehat{b}_e.
-        \]
-        Since $b_\ell$ and $a_{\ell e}$ are non-negative $\widehat{b}_e$ is non-negative as well. In case $a_{ie} \leq 0$, then $\widehat{b}_e$ is positive because all other involved quantities are positive. \pause When $a_{ie} > 0$ notice that \textsc{Simplex} choses $\ell$ in such a way that, for all $i  \in B$ with $a_{ie} > 0$,
-        \[
-        b_\ell/a_{\ell e} \leq b_i/a_{i e}.
-        \]
-        Thus, for all $i \in B$ with $a_{ie} > 0$,
-        \[
-        \widehat{b}_i \alt<4>{\textcolor{orange}{~\geq b_i - a_{ie}b_i/a_{ie} = 0}}{~ = b_i-a_{ie}b_\ell/a_{\ell e}}
-        \]
+      \pause
+      Updates of $\bs{b}$ are give by the relations
+      \small{
+      \begin{minted}[autogobble]{python}
+        T[l, -1] = (1/T[l, e])*T[l, -1]
+      \end{minted}
+      }
+      and for each $i \in \{1, \ldots, m+1\}$
+      \small{
+        \begin{minted}[autogobble]{python}
+          T[i, -1] -= (T[i, e]/T[l, e])*T[i, -1]
+        \end{minted}
+      }
+      \pause
+      The only possibility for such updates to give a negative result
+      is when \mintinline{python}{T[i, e] > 0}. In that case
+      \mintinline{python}{_simplex} chooses \mintinline{python}{l} in such a
+      way that
+      \small{
+      \begin{minted}[autogobble]{python}
+        T[l, -1]/T[l, e] <= T[i, -1]/T[i, e]
+      \end{minted}
+      }
+      \pause
+      Therefore, if \mintinline{python}{-T[i, e] < 0}, mutliplying
+      previous inequality by it and adding \mintinline{python}{T[i, -1]}
+      we get that update after \mintinline{python}{pivot} is
+      non-negative.
     \end{multicols}
 \end{frame}
 
 \begin{frame}{Cycling}
-    Each time we step into the \texttt{while} loop of the \textsc{Simplex} algorithm we either \textit{increase (or keep constant)} the objective value or discover the linear program is \textit{unbounded}. A priori, \textsc{Simplex} might run on indefinitely among different slack forms without ever increasing the objective value. We are going to make clear that such behaviour can be either detected or avoided.
+  Each time we step into the \mintinline{python}{while} loop of the
+  \mintinline{python}{_simplex} algorithm we either \textit{increase or keep
+    constant} the objective value or discover the LP is
+  \textit{unbounded}. A priori, \mintinline{python}{_simplex} might run
+  on indefinitely among equivalent slack forms without ever increasing
+  the objective value. We are going to check such behaviour can be
+  detected.
+  \pause
     \begin{prop}[\textbf{C}]
-        Let $L$ be a linear program given by the data $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ where $\bs{A}$ is an $(m, n)$ matrix then if \textsc{Simplex} runs more than $\binom{n+m}{m}$ iterations it does cycle, i.e. it goes indefinitely among the same finite set of slack forms with same given objective value.
+      Let $L$ be an LP $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ where
+      $\bs{A}$ is an $(m, n)$ matrix. If \mintinline{python}{_simplex}
+      runs more than $\binom{n+m}{m}$ iterations it does cycle,
+      i.e. it goes indefinitely among the same finite set of slack
+      forms with same given objective value.
     \end{prop}
     \begin{rem}
-        This means that whenever \textsc{Simplex} runs more than $\binom{n+m}{m}$ times then one can return the current objective value and basic solution.
+      This means that whenever \mintinline{python}{_simplex} runs more
+      than $\binom{n+m}{m}$ times then one can return any current
+      objective value and basic solution.
     \end{rem}
     \end{frame}
 
     \begin{frame}{Cycling}
         The proof of the above proposition is based on two facts :
         \begin{itemize}
-            \item \textsc{Simplex} is deterministic, if we ever get back to a previously obtained slack form then we are going to go back through all the slack forms starting with this one, once again.
-            \item There is only a finite set of possible slack forms for the same given linear program.
+        \item if we ever get back to a previously obtained slack form,
+          then we are going to have the same set of options we had for
+          equivalent slack forms once again.
+        \item There is only a finite set of possible slack forms for
+          the same given linear program.
         \end{itemize}
-        The latter point is the only point we need to make clear.
+        \pause
+        The second point is the only point we need to make clear.
     \end{frame}
 
     \begin{frame}{Cycling}
         \begin{lem}[$\bs{B}$]
-            Let $L$ be a linear program given in standard form by $(\bs{A}, \bs{b}, \bs{c})$. A slack form of $L$ is determined by the choice of a set $B$ of basic variables.
+          Let $L$ be an LP given by $(\bs{A}, \bs{b}, \bs{c})$. A
+          slack form of $L$ appearing in \mintinline{python}{_simplex}
+          is determined by the choice of a set $B$ of basic variables.
         \end{lem}
         \pause
         \setlength\columnseprule{.1pt}
         \begin{multicols}{2}
             \begin{demo}
-                Assume given two slack forms of $L$ with same basic sets (and thus same non-basic set) : $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ and $(N, B, \bs{A'}, \bs{b'}, \bs{c'}, \nu')$. \pause Forgetting about non-negativtiy constraints, substracting the linear constraints, we get the relations :
-                \[
-                0 = (\nu - \nu') + \sum_{i \in N} (c_j - c_j')x_j
-                \]
-                and for each $i \in B$
-                \[
-                0 = (b_i - b_i') - \sum_{j \in N} (a_{ij} - a_{ij}')x_j.
-                \]
-                \pause
-                It is now a simple exercise to prove that for each $i \in B$ and $j \in N$, $\nu = \nu'$, $b_i = b_i'$, $c_j = c_j'$ and $a_{ij} = a_{ij}'$.
+              Such slack forms $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$
+              and $(N, B, \bs{A'}, \bs{b'}, \bs{c'}, \nu')$ are
+              equivalent through the identity map.  \pause
+              Substracting the linear constraints, we get the
+              relations :
+              \[
+              0 = (\nu - \nu') + \sum_{j \in N} (c_j - c_j')x_j
+              \]
+              and for each $i \in B$
+              \[
+              0 = (b_i - b_i') - \sum_{j \in N} (a_{ij} - a_{ij}')x_j.
+              \]
+              We're abusing notation here ; index of coefficients is
+              the one corresponding to line of $\bs{A}$ supporting
+              basic variable $i$.
+
+              \pause These relations being true for any vector
+              $(x_1, \ldots, x_n)$ it is clear that for each $i \in B$
+              and $j \in N$ we have  $\nu = \nu'$, $b_i = b_i'$, $c_j = c_j'$,
+              $a_{ij} = a_{ij}'$.
             \end{demo}
         \end{multicols}
     \end{frame}
 
-    \begin{frame}{Cycling}
-        \begin{prop}[\textbf{C}]
-            Let $L$ be a linear program given by the data $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ where $\bs{A}$ is an $(m, n)$ matrix then if \textsc{Simplex} runs more than $\binom{n+m}{n}$ iterations it does cycle, i.e. it goes indefinitely among the same finite set of slack forms with same given objective value.
-        \end{prop}
-        \begin{demo}
-            By lemma B, there are at most as many different slack forms as the number of possible choices of basic sets of variables. There are $\binom{m+n}{m}$ such choices. Thus if \textsc{Simplex} runs more iterations than $\binom{m+n}{m}$ then we already obtained twice the same slack form.
-        \end{demo}
-        \begin{rem}
-            Adding a counter to \textsc{Simplex} insures \textsc{Simplex} terminates.
-        \end{rem}
-            In practice we use a different solution, called \emph{Bland's rule} : each time we choose an index at lines 5 and 12 we choose the smallest possibile indices.
-    \end{frame}
+\begin{frame}{Cycling}
+  \begin{prop}[\textbf{C}]
+    Let $L$ be an LP $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ where
+    $\bs{A}$ is an $(m, n)$ matrix. If \mintinline{python}{_simplex}
+    runs more than $\binom{n+m}{n}$ iterations it does cycle, i.e. it
+    goes indefinitely among the same finite set of slack forms with
+    same given objective value.
+  \end{prop}
+  \begin{demo}
+    By lemma B, there are at most as many different slack forms
+    as the number of possible choices of basic sets of
+    variables. There are $\binom{m+n}{m}$ such choices. Thus if
+    \textsc{Simplex} runs more iterations than $\binom{m+n}{m}$
+    then we already obtained twice the same slack form.
+  \end{demo}
+  \pause
+  Adding a counter to \mintinline{python}{_simplex} insures
+  \mintinline{python}{_simplex} terminates.
 
-    \begin{frame}{Simplex Algorithm \textit{Restricted} | No Cycling version}
-        \small{
-      \begin{algorithmic}[1]
-       \Require $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ a linear program \alert{having feasible basic solution}
-       \Ensure a basic feasible solution having \textit{a priori} a maximal objetive value
-       \begin{multicols}{2}
-       \Function{Simplex}{$N, B, \bs{A}, \bs{b}, \bs{c}, \nu$}
-       \State Let $\partial$ and $x$ be zero vectors of length $n$
-       \While{$\exists$ index $j \in N$ such that $c_j > 0$}
-            \State choose smallest $e \in N$ for which $c_e > 0$
-            \ForAll{index $i \in B$}
-                \If{$a_{ie} > 0$}
-                    \State $\partial_i = \frac{b_i}{a_{ie}}$
-                \Else
-                    \State $\partial_i = \infty$
-                \EndIf
-            \EndFor
-            \State choose smallest $\ell \in B$ minimizing $\partial_i$
-            \If{$\partial_\ell = \infty$}
-                \State \textbf{raise exception} \textit{Unbounded}
-            \Else
-                \State $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu) =$ \Call{Pivot}{$N, B, \bs{A}, \bs{b}, \bs{c}, \nu, e, \ell$}
-            \EndIf
-        \EndWhile
-        \ForAll{$ i \in \{1, \ldots, n\}$}
-            \If{$i \in B$}
-                \State $x_i = b_i$
-            \EndIf
-        \EndFor
-        \State \Return{$(x_1, \ldots, x_n)$}
-    \EndFunction
-    \end{multicols}
-     \end{algorithmic}
-     }
-    \end{frame}
+  \pause
+  \begin{rem}
+    This solution is \alert{\emph{not}} an intelligent one. There are
+    many different solutions in practice.  We shall implement
+    \emph{Bland's rule}: each time we choose an index at line $21$ and
+    $30$ of previous \mintinline{python}{_simplex}, we choose the
+    smallest possible indexes.
+  \end{rem}
+\end{frame}
 
-    \begin{frame}
-        \centering
-        {\huge \textbf{That's it for today !}}
+\begin{frame}[fragile]{The Simplex Algorithm \emph{Restricted} | No Cycling Version}
+  \begin{overlayarea}{1.1\textwidth}{.75\textheight}
+  \setlength{\columnsep}{-10pt}
+  \begin{multicols}{2}
+    \scriptsize{
+      \begin{minted}[autogobble, linenos, breaklines]{python}
+        def _simplex(N, B, T):
+            """Restricted simplex algorithm
 
-    \end{frame}
+            Runs simplex algorithm on basic feasible
+            linear program in slack form.
+
+            Args:
+              N, B (list[int]): lists of non-basic
+              and basic variables.
+              T (ndarray[float]): numpy array for
+              tableau of linear program.
+            Output:
+              (ndarray[float]) vector tail of which
+              is maximal objective value, rest is
+              optimal point.
+            """
+            m = len(B)
+            l, margin = None, float('inf')
+            aug_var = [i for i in N if T[0, i] < 0]
+            while aug_var:
+              e = min(augmenting_var)
+              for i in range(m):
+                if T[i, e] > 0:
+                   if T[i, -1]/T[i, e] < margin:
+                     margin = T[i, -1]/T[i,e]
+                     l = i
+              if not l:
+                raise Exception("Unbounded LP")
+              pivot(N, B, T, e, l)
+              aug_var = [i for i in N if T[0, i] < 0]
+            return T[:, -1]
+      \end{minted}
+    }
+  \end{multicols}
+  \end{overlayarea}
+\end{frame}
+
+\begin{frame}
+  \centering
+  {\huge \textbf{That's it for today !}}
+\end{frame}
 
 \end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

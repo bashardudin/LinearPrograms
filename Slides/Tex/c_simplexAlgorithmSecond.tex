@@ -134,16 +134,16 @@
   along rows of $\bs{A}$. The \emph{tableau} $T$ of linear program $L$
   is obtained by
   \begin{itemize}
-  \item<2-> concatenating $\underline{\bs{A}}$ and $b^T$
-    along rows of $A$
+  \item<2-> concatenating $\underline{\bs{A}}$ and $b^T$ column-wise
+    along $A$
   \item<3-> concatenate result with the vector
-    $(-c_1, \ldots, -c_n, 0, \ldots 0)$ of size $n+m$ along columns of
-    $\bs{A}$.
+    $(-c_1, \ldots, -c_n, 0, \ldots 0, \nu)$ of size $n+m+1$ row-wise
+    along $\bs{A}$.
   \end{itemize}
   \pause[4]
   \begin{figure}
     \begin{tabular}{c|ccc|cccc|c|}
-       & \alert{$\bs{x_1}$} & \alert{$\cdots$} & \alert{$\bs{x_n}$} & \alert{$\bs{x_n}$} & \alert{$\bs{x_{n+1}}$} & \alert{$\cdots$} & \alert{$\bs{x_{n+m}}$} &  \\
+       & \alert{$\bs{x_1}$} & \alert{$\cdots$} & \alert{$\bs{x_n}$} & \alert{$\bs{x_{n+1}}$} & \alert{$\bs{x_{n+2}}$} & \alert{$\cdots$} & \alert{$\bs{x_{n+m}}$} &  \\
       \hline
        & $-c_1$ & $\cdots$ & $-c_n$ & $0$ & $0$ & $\cdots$ & $0$ & $\nu$ \\
       \hline
@@ -153,7 +153,7 @@
       \alert{$\bs{n+m}$} & $a_{m1}$ & $\cdots$  & $a_{mn}$  & $0$ & $\cdots$ & $\cdots$ & $1$ & $b_m$
     \end{tabular}
   \end{figure}
-  The tableau $T$ is of shape $(m+1, n + m + 1)$.
+  The tableau $T$ is of shape $(m + 1, n + m + 1)$.
   \end{frame}
 
 \begin{frame}[fragile]{Pivoting}
@@ -251,11 +251,11 @@
 \begin{frame}{Pivoting | Full Function}
   \begin{itemize}
   \item<1->
-    Indexes $e$ is an element of $N$ and $l$ one of $B$.
+    Index $e$ is an element of $N$ and $l$ one of $B$.
   \item<2->
     There better be no entries $e$, $l$ such that
     \mintinline{python}{T[l, e] == 0}. We shall ensure this is never
-    the case when Pivot is used.
+    the case when \mintinline{python}{pivot} is used.
   \item<3->
     The objective value and basic solution of obtained linear program
     can be read on last column to the right.
@@ -270,20 +270,20 @@
         \begin{linearProgG}{
             ${\displaystyle z = \nu + \sum_{j=1}^n c_jx_j}$
             }{
-            ${\displaystyle \forall i \in B, \quad \sum_{j=1}^n a_{ij}x_j \leq b_i}$
+            ${\displaystyle \forall i \in \{1, \ldots, m\}, \quad \sum_{j=1}^n a_{ij}x_j \leq b_i}$
             }{
             $\forall j \in N, \quad x_j \geq 0$
             }
         \end{linearProgG}
     \end{figure}
     \begin{halfshyblock}{Fact}
-      \begin{onlyenv}<1>
-        If there was an index $j$ such that $c_j > 0$ and all
+      \begin{onlyenv}<1
+        >If there was an index $j$ such that $c_j > 0$ and all
         coefficients of $x_{j}$ in the linear constraints were
         non-positive then $L$ is unbounded.
       \end{onlyenv}
       \begin{onlyenv}<2-
-        >\alert{Equivalently, if there was a column in the program's tableau
+        >\!\alert{Equivalently, if there was a column in the program's tableau
         having negative first entry and only non-positive ones
         afterwards then $L$ is unbounded.}
       \end{onlyenv}
@@ -293,7 +293,7 @@
 \begin{frame}{Testing Boundedness}
   Using the previous fact we can test, each time we call
   \mintinline{python}{pivot}, that the input linear program
-  \alert{\emph{doesn't}} satisfy the previous property :
+  \alert{\emph{doesn't}} satisfy the property :
     \begin{quote}
       There is an index $j$ such that $c_j > 0$ and all coefficients
       of $x_j$ in the linear constraints are non-positive.
@@ -358,19 +358,20 @@
 \end{frame}
 
 \begin{frame}{The Simplex Algorithm : First Validity Checks}
-  There are three things we need to check in order to temporarily
+  There are two things we need to check in order to temporarily
   accept the previous version of the simplex algorithm
     \begin{enumerate}
-        \item
+        \item<2->
           after each call to \mintinline{python}{pivot} the linear
           program we get has feasible basic solution
-        \item
-          \textcolor<3>{lightgray}{the objective value does not
+        \item<3->
+          \textcolor<4->{lightgray}{the objective value does not
             decrease while looping}
-          \only<2->{\textcolor{orange}{\textbf{(We choose it that
+          \only<4->{\textcolor{orange}{\textbf{(We choose it that
                 way!)}}}
     \end{enumerate}
-    and a a last point to \textit{understand} :
+    \pause[5]
+    and a last point to \textit{understand} :
     \begin{enumerate}
         \item[3.]
           what does it mean for \mintinline{python}{_simplex} not to terminate? how
@@ -431,7 +432,7 @@
       Let $L$ be an LP $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ where
       $\bs{A}$ is an $(m, n)$ matrix. If \mintinline{python}{_simplex}
       runs more than $\binom{n+m}{m}$ iterations it does cycle,
-      i.e. it goes indefinitely among the same finite set of slack
+      i.e. it wanders indefinitely along the same finite set of slack
       forms with same given objective value.
     \end{prop}
     \begin{rem}
@@ -493,7 +494,7 @@
     Let $L$ be an LP $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ where
     $\bs{A}$ is an $(m, n)$ matrix. If \mintinline{python}{_simplex}
     runs more than $\binom{n+m}{n}$ iterations it does cycle, i.e. it
-    goes indefinitely among the same finite set of slack forms with
+    wanders indefinitely along the same finite set of slack forms with
     same given objective value.
   \end{prop}
   \begin{demo}

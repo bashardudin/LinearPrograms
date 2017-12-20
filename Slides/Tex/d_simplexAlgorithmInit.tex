@@ -244,7 +244,9 @@
         i_min = np.argmin(T[1: ,-1])
         pivot(N, B, T, i_min, 0)
         V = _simplex(N, B, T)
-        return V[0] == 0
+        return math.isclose(V[0], 0)
+        # Possibly slightly modifying the
+        # optimisation problem ...
       \end{minted}
     }
   \end{multicols}
@@ -295,30 +297,6 @@
   \end{overlayarea}
 \end{frame}
 
-\begin{frame}{The \textsc{InitSimplex} Function}
-  \small{
-    \begin{algorithmic}[1]
-      \Require $L = (\bs{A}, \bs{b}, \bs{c})$ a linear program in standard form
-      \Ensure An equivalent program having feasible basic solution if $L$ is feasible.
-      \Function{InitSimplex}{$\bs{A}, \bs{b}, \bs{c}$}
-            \If{\Call{IsFeasible}{$\bs{A}, \bs{b}, \bs{c}$} raises an exception}
-                \State \textbf{raise exception} \textit{infeasible}
-            \Else
-                \State ($N$, $B$, $\bs{A'}$, $\bs{b'}$, $\bs{c'}$, $\nu$) = \Call{IsFeasible}{$\bs{A}, \bs{b}, \bs{c}$}
-                \If{$0$ is basic}
-                    \State Choose $e$ such that $a_{0e}' \neq 0$
-                    \State ($N$, $B$, $\bs{A'}$, $\bs{b'}$, $\bs{c'}$, $\nu$) = \Call{Pivot}{$N$, $B$, $\bs{A'}$, $\bs{b'}$, $\bs{c'}$, $\nu$, $0$, $e$}
-                \EndIf
-                \State Update $(\bs{c}, \nu)$ to express objective value in terms non-basic indices
-                \State Remove column corresponding to index $0$ from $\bs{A'}$
-                \State \Return{($N$, $B$, $\bs{A'}$, $\bs{b'}$, $\bs{c}$, $\nu$)}
-            \EndIf
-        \EndFunction
-        \Statex
-    \end{algorithmic}
-    }
-\end{frame}
-
 \begin{frame}[fragile]{The \mintinline{python}{is_feasible} function}
   \begin{overlayarea}{1.05\textwidth}{.75\textheight}
     \setlength\columnseprule{.1pt}
@@ -358,7 +336,9 @@
           for i in B:
             c -= c[i]*T[B.index(i), :]
           T[0, :] = c
-          return V[0] == 0
+          return math.isclose(V[0], 0)
+          # Possibly slightly modifying the
+          # optimisation problem ...
       \end{minted}
     }
   \end{multicols}
@@ -373,8 +353,8 @@
     \mintinline{python}{is_feasible}
   \item<2->
     if it is feasible we can build up an equivalent linear program
-    which has feasible basic solution using
-    \mintinline{python}{init_simplex}
+    which has feasible basic solution using boundary effect of
+    \mintinline{python}{is_feasible}
   \item<3->
     once we get a linear program having feasible basic solution we can
     check whether our linear program is unbounded or has a

@@ -1,0 +1,471 @@
+\documentclass[aspectratio = 169]{beamer}
+
+\usepackage[utf8]{inputenc} % Character encoding.
+
+\pdfinfo{
+   /Author (Bashar Dudin)
+   /Title  (What is a linear program?)
+   /Subject (Linear Programs)
+}
+
+\usepackage{./Style/linearProgramsBeamer} % This is extra styling for Beamer environments.
+\usepackage{./Style/linearProgramsStyle} % This is a set of commands for maths content.
+
+%-------------------------------------------------------------------------------
+%   TITLE PAGE
+%-------------------------------------------------------------------------------
+
+\author[BD]{Bashar Dudin}
+
+\institute[]{EPITA}
+
+\title{Programmes lin\'eaires} %
+\subtitle{Qu'est-ce qu'un programme lin\'eaire?}
+
+%-------------------------------------------------------------------------------
+%   DOCUMENT BODY
+%-------------------------------------------------------------------------------
+
+\begin{document}
+
+\begin{frame}[plain]
+\titlepage % Print the title page as the first slide
+\end{frame}
+
+\begin{frame}{Consid\'erations politiciennes}
+  \begin{onlyenv}<1>
+    Cet exemple est extrait de \textbf{Introduction to Algorithms}
+    par \emph{Cormen et Al.} :
+        \begin{quotation}
+          Suppose that you are a politician trying to win an
+          election. Your district has three different types of areas:
+          urban, suburban, and rural. These areas have respectively:
+          100.000, 200.000 and 50.000 registered voters. Although not
+          all the registered voters actually go to the polls, you
+          decide that to govern effectively, you would like at least
+          half the registered voters in each of the three regions to
+          vote for you. You are honorable and would never consider
+          supporting policies in which you do not believe. You
+          realize, however, that certain issues may be more effective
+          in winning votes in certain places. Your primary issues are
+          building roads, gun control, farm subsidies, and a gasoline
+          tax dedicated to improve public transit. According to your
+          campaign staff's research, you can estimate how many voters
+          you win or lose from each population segment by spending
+          1.000€ on advertising on each issue.
+        \end{quotation}
+    \end{onlyenv}
+    \begin{onlyenv}<2>
+        \begin{figure}
+            \begin{tabular}{l|ccc}
+                politique & z. urbaine & p\'eriph\'erie & z. rurale \\
+                \hline
+                R\'eseau Routier & -2 & 5 & 3 \\
+                Contr\^ole des armes & 8 & 2 & -5 \\
+                Subvention de l'agriculture & 0 & 0 & 10 \\
+                Taxer le diesel & 10 & 0 & -2
+            \end{tabular}
+        \end{figure}
+        \begin{quotation}
+          Dans la table ci-dessus, chaque entr\'ee indique le nombre
+          en \emph{milliers} des votants des zones urbaines,
+          p\'eriph\'eriques ou rurales dont on gagne le soutien en
+          d\'epensant 1.000€ de publicit\'es sur une politique en
+          particulier. Les entr\'ees n\'egatives indiques le nombres
+          de votants qu'on perds. Notre but est de trouver le plus
+          petit budget pub qui nous permet de gagner au moins 50.000
+          votes urbains, 100.000 votes des p\'eriph\'eries et 25.000
+          votes des zones rurales.
+        \end{quotation}
+    \end{onlyenv}
+\end{frame}
+
+\begin{frame}{Mod\'elisation}
+  \begin{onlyenv}<1-2>
+    Le co\^ut totale de la campagne est \'egal au co\^ut des campagnes
+    de pubs sur chaque mesure.  On note $x_1$, $x_2$, $x_4$ and $x_5$
+    les co\^uts respectifs des publicit\'es concernant le r\'eseau de
+    routes, le contr\^ole des armes, les subventions agricoles et la
+    taxation du diesel. Chaque tel co\^ut est positif. Ainsi
+    \begin{equation}
+      \label{eq:positivityCondition}
+      x_1, x_2, x_3, x_4 \geqslant 0.
+    \end{equation}
+    La premi\`ere colonne donnne les contraintes suivantes sur chaque co\^ut
+    \begin{equation}
+      \alt<1>{-2x_1 + 8x_2 + 0x_3 + 10x_4 \geqslant 50}{\textcolor{orange}{-2x_1 + 8x_2 + 10x_4 \geqslant 50}}
+    \end{equation}
+    Le membre de gauche de l'in\'egalite d\'ecrit le fait qu'il nous
+    faut plus que 50.000 votants des zones urbaines.
+  \end{onlyenv}
+  \begin{onlyenv}<3>
+    Chaque colonne de la table des co\^uts donne une telle
+    \emph{contrainte d'in\'egalit\'e} sur l'ensemble des co\^uts. En
+    r\'esum'e, notre probl\`eme s'\'ecrit sous la forme
+    \begin{figure}
+      \begin{linearProg}{
+          minimiser
+        }{
+          $x_1+x_2+x_3+x_4$
+        }{
+          \systeme{-2x_1 + 8x_2 + 0x_3 + 10x_4 \geq  50,
+            5x_1 + 2x_2 + 0x_3 + 0x_4\geq 100,
+            3x_1 - 5x_2 + 10x_3 - 2x_4 \geq 25}
+        }{
+          $x_1$, $x_2$, $x_3$, $x_4 \geq 0$
+        }
+      \end{linearProg}
+    \end{figure}
+    Ceci est notre premier exemple de probl\'eme lin\'eaire.
+    \end{onlyenv}
+\end{frame}
+
+\begin{frame}{D\'efinition G\'en\'erale}
+  \begin{defn}
+    Un programme lin\'eaire est un probl\'eme de minimisation ou de
+    maximisation d'une fonction lin\'eaire sujet \`a un nombre de
+    contraintes \'egalement lin\'eaires.
+  \end{defn}
+  \alt<3>{Une \alert{\emph{fonction affine}}}{Une \emph{fonction
+      lin\'eaire}} en $k$ variables (pour $k \in \N^*$) est une fonction
+  $f$ ayant une expression de la forme
+  \[
+    f(x_1, x_2, \ldots, x_k) = \uncover<3>{\alert{c_0 + }} c_1x_1 + c_2x_2 + \cdots + c_kx_k
+  \]
+  pour $k$ nombres r\'eels $c_1$, $\ldots$, $c_k$. Une
+  \emph{contrainte lin\'eaire} est ou bien une \'egalit\'e ou alors
+  une in\'egalit\'e (large), contenant uniquement des expressions
+  affines.
+
+  \pause La \alt<3>{\alert{\textit{fonction affine}}}{\textit{fonction
+      lin\'eaire}} qu'on cherche \`a optimiser dans un programme
+  lin\'eaire est appel\'ee la \emph{fonction objectif}. Quand on
+  cherche \`a minimiser la fonction objectif on dit qu'on a affaire
+  \`a un probl\`eme de minimisation. C'est un probl\`eme de
+  maximisation sinon.
+\end{frame}
+
+\begin{frame}{D\'efinition G\'en\'erale}
+  \'Etant donn\'e un programme lin\'eaire, notre but est de trouver
+  des points qui satisfonts les contraintes lin\'eaires, et pour
+  lesquels la fonction objectif prend sa valeur optimale. Une valeur
+  prise par la fonction objectif est appel\'ee une \emph{valeur
+    objectif}.
+
+  \pause
+  Une solution aux contraintes lin\'eaires, m\^eme si elle n'optimise
+  pas la fonction objectif, est dite \emph{solution
+    admissible}. L'essentiel des algorithmes qui optimisent des
+  probl\`emes lin\'eaires proc\`edent en construisant des suites de
+  solutions admissibles it\'erativement, et qui convergent vers une
+  \emph{solution optimale}.  \pause
+  \begin{halfshyblock}{Retour aux \'el\'ections}
+    Donner des solutions admissibles ayant d'aussi petites valeurs que
+    vous pouvez.
+  \end{halfshyblock}
+  \pause
+  \begin{alertblock}{Tip}
+    La vraie r\'eponse n'est peut-\^etre pas si facile que cela.
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}{Forme standard}
+  Voici deux exemples apparemment diff\'erent du programme lin\'eaire
+  politique:
+    \begin{overlayarea}{\textwidth}{.5\textheight}
+    \begin{onlyenv}<2>
+    \begin{figure}
+        \begin{linearProg}{
+            minimiser
+            }{
+            $x_1 + x_2 + x_3 + x_4$
+            }{
+            \systeme{2x_1 - 8x_2 - 0x_3 - 10x_4 \leq -50,
+                      5x_1 + 2x_2 + 0x_3 + 0x_4 \geq 100,
+                      3x_1 - 5x_2 + 10x_3 - 2x_4 \geq 25}
+            }{
+            $x_1$, $x_2$, $x_3$, $x_4 \geq 0$
+            }
+        \end{linearProg}
+    \end{figure}
+    \end{onlyenv}
+    \begin{onlyenv}<3-4>
+        \vspace{-1em}
+    \begin{figure}
+        \begin{linearProg}{
+            maximiser
+            }{
+            \textcolor{orange}{$-x_1 - x_2 - x_3 - x_4$}
+            }{
+            \systeme{-2x_1 + 8x_2 + 0x_3 + 10x_4 \geq 50,
+                      5x_1 + 2x_2 + 0x_3 + 0x_4\geq 100,
+                      3x_1 - 5x_2 + 10x_3 - 2x_4 \geq 25}
+            }{
+            $x_1$, $x_2$, $x_3$, $x_4 \geq 0$
+            }
+        \end{linearProg}
+    \end{figure}
+    \end{onlyenv}
+    \end{overlayarea}
+    \pause[4]
+    Le premier programme est obtenu \'a partir de notre exemple de
+    d\'epart en multipliant la premi\`ere contrainte par $-1$. Le
+    second en choisissant de maximiser l'oppos\'e de la fonction
+    objectif au lieu de la minimiser.
+\end{frame}
+
+\begin{frame}{Forme standard}
+  Si notre but est de construire un algorithme qui nous permette de
+  r\'esoudre des programmes lin\'eaires, un tel algorithme va prendre
+  en entr\'ee la liste des coefficients de notre programmes. Les
+  exemples pr\'ec\'edents sugg\`erent qu'on a diff\'erentes listes de
+  coefficients possibles pour un m\^eme programme lin\'eaire. Il nous
+  faut donc standardiser l'entr\'ee.
+  \begin{defn}
+    Un programme lin\'eaire est sous \emph{forme standard} si
+    \begin{itemize}
+    \item[\textbullet] c'est un probl\`eme de maximisation
+    \item[\textbullet] toutes les contraintes sont des in\'egalit\'es larges
+    \item[\textbullet] toutes les variables sont sujet \`a des
+      contraintes de positivit\'e.
+    \end{itemize}
+  \end{defn}
+  Des trois formes que notre programme d'\'etude \` prise aucune n'est
+  sous forme standard.
+\end{frame}
+
+\begin{frame}{R\'eduction \`a la forme standard}
+  Afin que la notion de forme standard puisse \^etre int\'er\'essante
+  il faut qu'on puisse transformer n'importe quel programme lin\'eaire
+  en un programme lin\'eaire sous forme standard. On s'attend, de
+  fa\c{c}on similaire \`a ce qu'on a dans le cas du pivot de Gauss,
+  \`a une notion d'\emph{\'equivalence} de programmes lin\'eaires pour
+  laquelle tous programmes lin\'eaire est \'equivalent \`a un
+  programme sous forme standard.
+
+
+  Cette notion d'\'equivalence de programme lin\'eaire est assez
+  d\'elicate ; on va prendre le temps de l'expliquer dans le d\'etail.
+\end{frame}
+
+\begin{frame}{R\'eduction \`a la forme standard}
+  \begin{defn}
+    \begin{itemize}
+    \item[\textbullet]
+      Deux programmes lin\'eaires de maximisation $L$ et $L'$ sont
+      \emph{equivalent} si pour toute solution admissible  de $L$
+      ayant valeur objectif $v$ il existe une solution admissible de
+      $L'$ ayant m\^eme valeur objectif, et vice versa.
+    \item[\textbullet]
+      Un programme de minimisation $L$ est \emph{equivalent} \`a un
+      porgramme de maximization $L'$ si pour chaque solution
+      admissible $x$ de $L$ ayant valeur objectif $v$ il existe une
+      solution admissible $x'$ de $L'$ ayant valeur objectif $-v$, et
+      vice versa.
+    \end{itemize}
+  \end{defn}
+  \begin{overlayarea}{\textwidth}{.3\textheight}
+    \vspace{-1em}
+    \begin{onlyenv}<2>
+      \begin{prop}
+        Si $L$ et $L'$ sont des programmes de maximization
+        \'equivalents alors $L$ et $L'$ ont m\^emes valeurs optimales.
+      \end{prop}
+    \end{onlyenv}
+    \begin{onlyenv}<3>
+      \vspace{1em}
+      \begin{halfshyblock}{Proof}
+        Utilisez vos mots pour justifier ce fait.
+      \end{halfshyblock}
+    \end{onlyenv}
+    \begin{onlyenv}<4->
+      \vspace{1em}
+      \begin{halfshyblock}{Variantes}
+        Comment s'adapte cet \'enonc\'e au cas de minimsations? Au cas mixte?
+      \end{halfshyblock}
+    \end{onlyenv}
+  \end{overlayarea}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Examples de cas d'\'equivalences}
+  \begin{columns}
+    \begin{column}{.55\textwidth}
+      \begin{figure}
+        \begin{linearProg}{
+            maximiser
+          }{
+            $2x_1 + x_2 + 3$
+          }{
+            \systeme{x_1 + x_2 + x_3 \geq 4,
+              x_1 - x_2 - x_3\geq 2,
+              - x_1 + x_2 + 2x_3 \geq 1}
+          }{
+            $x_1$, $x_2$, $x_3 \geq 0$
+          }
+        \end{linearProg}
+      \end{figure}
+    \end{column}
+    \vrule{}
+
+    \quad
+    \begin{column}{.55\textwidth}
+      \begin{overlayarea}{\textwidth}{.55\textheight}
+
+        \begin{onlyenv}<2>
+         ~
+          \begin{figure}
+            \begin{linearProg}{
+                minimiser
+              }{
+                $-2x_1 - x_2 - 3$
+              }{
+                \systeme{x_1 + x_2 + x_3\phantom{-s} \geq 4,
+                  x_1 - x_2 - x_3\geq 2,
+                  - x_1 + x_2 + 2x_3 \geq 1}
+              }{
+                $x_1$, $x_2$, $x_3 \geq 0$
+              }
+            \end{linearProg}
+          \end{figure}
+        \end{onlyenv}
+        \begin{onlyenv}<3>
+          \begin{figure}
+            \begin{linearProg}{
+                minimiser
+              }{
+                $-2x_1 - x_2 - 3$
+              }{
+                \systeme{x_1 + x_2 + x_3 - s = 4,
+                  x_1 - x_2 - x_3\geq 2,
+                  - x_1 + x_2 + 2x_3 \geq 1}
+              }{
+                $x_1$, $x_2$, $x_3$, $s \geq 0$
+              }
+            \end{linearProg}
+          \end{figure}
+        \end{onlyenv}
+        \begin{onlyenv}<4>
+          \begin{figure}
+            \begin{linearProg}{
+                maximiser
+              }{
+                $2x_1 + x_2 + 3$
+              }{
+                \systeme{x_1 + x_2 + x_3 - s = 4,
+                  x_1 - x_2 - x_3\geq 2,
+                  - x_1 + x_2 + 2x_3 \geq 1}
+              }{
+                $x_1$, $x_2$, $x_3$, $s \geq 0$
+              }
+            \end{linearProg}
+          \end{figure}
+        \end{onlyenv}
+        \begin{onlyenv}<5>
+          \begin{figure}
+            \begin{linearProg}{
+                maximiser
+              }{
+                $t$
+              }{
+                \systeme{
+                  2x_1 + x_2 + 3 - t \geq 0,
+                  x_1 + x_2 + x_3 \geq 4,
+                  x_1 - x_2 - x_3\geq 2,
+                  - x_1 + x_2 + 2x_3 \geq 1}
+              }{
+                $x_1$, $x_2$, $x_3$, $t \geq 0$
+              }
+            \end{linearProg}
+          \end{figure}
+        \end{onlyenv}
+      \end{overlayarea}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{R\'eduction \`a la forme standard}
+  Un programme lin\'eaire pourrait ne pas \^etre sous forme standard
+  \`a cause de l'un des probl\`emes suivants:
+  \begin{enumerate}
+  \item La fonction objectif n'est pas \`a maximiser mais \`a
+    minimiser.
+  \item Une variable peut ne pas \^etre sans contraintes de positivit\'e.
+  \item Il se peut qu'on ait une contrainte d'\'egalit\'e et non une
+    contrainte d'in\'egalit\'e large.
+  \item Il se peut que certaines contraintes d'in\'egalit\'es soient invers\'ees.
+  \item Il se peut que certaines contraintes d'in\'egalit\'es ne
+    soient pas larges, mais strictes.
+  \end{enumerate}
+  \vspace{1em}
+  \begin{overlayarea}{\textwidth}{.3\textheight}
+    \begin{onlyenv}<2>
+      \begin{halfshyblock}{How-do?}
+        Comment r\'egler chacune des pathologies pr\'ec\'edentes.
+      \end{halfshyblock}
+    \end{onlyenv}
+    \begin{onlyenv}<3->
+      \begin{halfshyblock}{Cas d'\'etude}
+        Mettex notre programme lin\'eaire sous forme standard. Quelles
+        sont les op\'erations que vous avex effectu\'ees? Pourquoi
+        donnent-elle un programme lin\'eaire \'equivalent \`a
+        l'original?
+      \end{halfshyblock}
+    \end{onlyenv}
+  \end{overlayarea}
+\end{frame}
+
+\begin{frame}{Forme \textit{slack}}
+  Malgr\'e le fait que la forme standard soit naturelle, l'algorithme
+  du \emph{simplexe} on travaille avec une forme \'equivalente dite
+  \emph{slack} ou des \emph{\'ecarts}.
+  \begin{defn}
+    \'Etand donn\'e un programme lin\'eaire sous forme standard $L$ la
+    forme \textit{slack} de $L$ est obtenue \`a partir de $L$ en
+    injectant une variable suppl\'ementaire (dite d'\'ecart) pour
+    chaque in\'egalit\'e comme membre gauche. Chaque in\'egalit\'e est
+    d\`es lors remplac\'ee par une \'egalit'e, et les variables
+    d'\'ecarts subissent des contraintes d'in\'egalit\'es.
+  \end{defn}
+  \vspace{1em}
+  \begin{overlayarea}{\textwidth}{.35\textheight}
+    \begin{onlyenv}<2>
+      Par exemples les deux in\'egalit\'es
+      \[
+      \sysdelim..\systeme{x_1 + x_2 \leq 20, 2x_1 - x_2 \leq 2}
+      \]
+    \end{onlyenv}
+    \begin{onlyenv}<3-4>
+      donnent les in\'egalit\'es
+      \[
+      \sysdelim..\systeme{20 - x_1 - x_2 = x_3, 2 - 2x_1 + x_2 = x_4 }
+      \]
+    \end{onlyenv}
+  \end{overlayarea}
+\end{frame}
+
+\begin{frame}{Slack Form}
+  \begin{prop}
+    Les formes standard et \textit{slack} d'un programme
+    lin\'eaire sont \'equivalentes.
+  \end{prop}
+  \pause
+  \begin{halfshyblock}{Slacking}
+    Donnez la forme standard de notre programme d'\'etude.
+  \end{halfshyblock}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    {\huge \textbf{C'est tout pour aujourd'hui!}}
+   \end{center}
+ \end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

@@ -1,3 +1,11 @@
+# Private
+Results/
+.gitignore
+
+# Temp
+auto/
+_minted*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -99,3 +107,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# temp
+*~
+*DS_Store
+*_old.tex
+*vrb

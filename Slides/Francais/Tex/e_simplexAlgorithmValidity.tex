@@ -1,0 +1,205 @@
+\documentclass[32pt, aspectratio = 169]{beamer}
+
+\usepackage[utf8]{inputenc} % Character encoding.
+
+\pdfinfo{
+   /Author (Bashar Dudin)
+   /Title  (Validity of the Simplex Algorithm)
+   /Subject (Linear Programs)
+}
+
+
+\usepackage{./Style/linearProgramsBeamer} % This is extra styling for Beamer environments.
+\usepackage{./Style/linearProgramsStyle} % This is a set of commands for maths content.
+
+%-------------------------------------------------------------------------------
+%   TITLE PAGE
+%-------------------------------------------------------------------------------
+
+\author[BD]{Bashar Dudin}
+
+\institute[]{EPITA}
+
+\title{Linear Programs} %
+\subtitle{Validity of the Simplex Algorithm}
+
+%-------------------------------------------------------------------------------
+%   DOCUMENT BODY
+%-------------------------------------------------------------------------------
+
+\begin{document}
+
+\begin{frame}[plain]
+    \titlepage % Print the title page as the first slide
+\end{frame}
+
+\begin{frame}{Where We Stand? What Is Left?}
+  Given a linear program we are now able to check whether it is
+  feasible or not. Under such an assumption we can find an equivalent
+  linear program who has basic feasible solution. When that is the
+  case we can execute the \textit{restricted} simplex algorithm. We
+  find ourselves in front of the upcoming two outputs
+    \begin{itemize}
+        \item the program is unbounded
+        \item the algorithm terminates with a finite output.
+    \end{itemize}
+    Up so far we haven't proved that this procedure gives back an
+    optimal solution. We only know it is feasible. Showing optimality
+    is the subject of this set of slides.
+\end{frame}
+
+\begin{frame}{The Dual Linear Program}
+    \begin{columns}[T]
+        \begin{column}{.5\textwidth}
+            ~\vspace{.15\baselineskip}
+
+            Let $L$ be the linear program (called \emph{primal}),
+            given in standard form by :
+            \begin{figure}
+            \begin{linearProgG}{
+                ${\displaystyle z = \sum_{j = 1 }^n c_jx_j}$
+                }{
+                ${\displaystyle \forall i \in \{1, \ldots, m\} , \quad \sum_{j = 1}^n a_{ij}x_j \leq b_i}$
+                }{
+                $\forall j \in \{1, \ldots, n\}, \quad x_j \geq 0$
+                }
+            \end{linearProgG}
+            \end{figure}
+        \end{column}
+        \begin{column}{.55\textwidth}
+            \begin{tcolorbox}[
+                enhanced,
+                parbox = false,
+                colback = mLightBrown!30!white,
+                colframe = mLightBrown!30!white,
+                arc = 0mm,
+                ]
+                Out of $L$ we build the following linear program
+                $L^\vee$ called the \emph{dual} of $L$ :
+                \begin{figure}
+                   \begin{linearProg}{
+                        minimize
+                        }{
+                        ${\displaystyle z = \sum_{i=1}^m b_iy_i }$
+                        }{
+                        ${\displaystyle \forall j \in \{1, \ldots, n\}, \quad \sum_{i =1 }^m a_{ij}y_i \geq c_j}$
+                        }{
+                        $\forall i \in \{1, \ldots, m\}, \quad y_i \geq 0$
+                        }
+                    \end{linearProg}
+                \end{figure}
+            \end{tcolorbox}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Duality}
+    The main result justifying, for us, the existence and denomination of the dual linear program is the following.
+    \begin{alertblock}{Duality}
+        A linear program $L$ and its dual $L^\vee$ have same optimal objective values if bounded.
+    \end{alertblock}
+    We have, in fact, a much more precise statement :
+    \begin{prop}
+      If $L$ is in a slack form having optimal basic solution then
+      setting $y_i = -c_{n+i}$ gives an optimal solution of $L^\vee$.
+    \end{prop}
+\end{frame}
+
+\begin{frame}{Duality}
+  We'll only be checking duality and giving a glimpse of the
+  perception to have.
+
+  Assume we are given a feasible solution
+  $(\bar{x}_1, \ldots, \bar{x}_n)$ of $L$ and another one
+  $(\bar{y}_1, \ldots, \bar{y}_m)$ of $L^\vee$. Using constraints of
+  both linear programs we have that
+    \begin{align}
+    \sum_{i=1}^m b_i\bar{y}_i & \geq \sum_{i=1}^m \sum_{j=1}^n a_{ij}\bar{x}_j\bar{y}_i \\
+        & \geq \sum_{j=1}^n \sum_{i=1}^m a_{ij}\bar{y}_i\bar{x}_j \geq \sum_{j=1}^n c_j\bar{x}_j
+\end{align}
+    \begin{tcolorbox}[
+        enhanced,
+        parbox = false,
+        colback = mLightBrown!30!white,
+        colframe = mLightBrown!30!white,
+        arc = 0mm,
+        ]
+        The optimal objective value of $L$, if any, is bounded from
+        above by the objective value of any feasible solution of
+        $L^\vee$. Conversely, the optimal objective value of $L^\vee$
+        is bounded from below by the objective value of any feasible
+        solution of $L$.
+    \end{tcolorbox}
+\end{frame}
+
+\begin{frame}{Duality}
+    The previous reasoning stands for the following result
+    \begin{lem}
+      If $L$ and $L^\vee$ have respective feasible solutions
+      $(\bar{x}_1, \ldots, \bar{x}_n)$ and
+      $(\bar{y}_1, \ldots, \bar{y}_n)$ such that
+        \[
+        \sum_{i=1}^m b_i\bar{y}_i = \sum_{j=1}^nc_j\bar{x}_j
+        \]
+        then both are \emph{optimal} feasible solutions of their respective linear programs.
+    \end{lem}
+    \begin{demo}
+      We've just seen that the optimal objective value of $L$ is
+      smaller or equal to the one of $L^\vee$. The previous hypothesis
+      just says it also has to be bigger or equal to the one of
+      $L^\vee$, thus equality.
+    \end{demo}
+\end{frame}
+
+\begin{frame}{Duality}
+  To prove the duality theorem as well as the subsequent proposition
+  the strategy is the following :
+    \begin{itemize}
+        \item
+          run \textsc{Simplex} on $L$
+        \item
+          if result is a solution having finite\footnote{If it is
+            unfeasible or unbounded above lemma ensures this is also
+            the case of $L^\vee$.} objective value, check that
+          instruction of proposition gives a feasible solution of
+          $L^\vee$ having same objective value
+        \item
+          lemma implies both objective values are optimal.
+    \end{itemize}
+    This reasoning shows that if we have an optimal feasible solution
+    for $L$ then we have one of same objective value for $L^\vee$. To
+    check the converse try making sense of
+    \begin{halfshyblock}{Bi-duality}
+        The dual of the dual linear program is the primal one.
+    \end{halfshyblock}
+\end{frame}
+
+\begin{frame}{Fundamental Theorem of Linear Programming}
+  Incidently, the previous strategy shows that \textsc{Simplex} finds
+  solutions of both $L$ and $L^\vee$ that have same objective
+  values. Thus \textsc{Simplex} does compute an optimal solution of
+  $L$.
+    \begin{thm}
+      \textsc{Simplex} does either check whether a linear program $L$
+      is feasible, unbounded or gives back an optimal feasible
+      solution of $L$ having finite objective value.
+    \end{thm}
+    This gives the following core result on linear programs :
+    \begin{cor}[\textit{(Fundamental Theorem of Linear Programming)}]
+      Any linear program $L$ is either infeasible, unbounded or has
+      finite optimal objective value
+    \end{cor}
+\end{frame}
+
+
+\begin{frame}
+        \centering
+        {\huge \textbf{Merry Christmas!}}
+\end{frame}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

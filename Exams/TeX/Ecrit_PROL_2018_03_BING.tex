@@ -1,0 +1,199 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{fancyhdr}
+\usepackage[margin=.7in]{geometry}
+\usepackage{exsheets}
+\usepackage{enumerate}
+
+\usepackage{./Style/linearProgramsStyle} % This is a set of commands for maths content.
+
+\pagestyle{fancy}
+
+\renewcommand{\headrulewidth}{2pt}
+\fancyhead[L]{EPITA\_ING1\_BING\_2020\_S5\_PROL}
+\fancyhead[R]{March 2018}
+
+\fancyfoot[C]{\textbf{\thepage}}
+\fancyfoot[L]{}
+
+\pretitle{\vspace{-.5\baselineskip} \begin{center}}
+\title{%
+  { \huge Linear Programming}\\ %
+  \vspace{.5\baselineskip}
+  {\Large \textit{Complemetary Exam} }
+}
+\posttitle{
+\end{center}
+  \begin{flushleft}
+    \vspace{2\baselineskip} \textit{
+      \!\!\emph{Duration: 1h30.}\\
+      \! \emph{No documents are allowed.}  \\
+      Only \emph{non-programmable} pocket calculators are allowed.
+    }
+  \end{flushleft}
+  \rule{\textwidth}{1.5pt}
+  \vspace{-5\baselineskip}
+}
+\author{}
+\date{}
+
+\pdfinfo{
+   /Author (Bashar Dudin)
+   /Title  (PROL Exam -- 2018)
+   /Subject (Linear Programming)
+}
+
+\begin{document}
+
+\maketitle\thispagestyle{fancy}
+
+We're considering the following list of linear programs respectively
+given the names $(A)$, $(B)$, $(C)$, $(D)$, $(E)$ and $(F)$.
+\[
+(A) \;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $3x_1 + 2x_2 + 3x_3$
+    }{
+      \systeme{
+        -x_1 - 2x_2 - 3x_3 \leq 5,
+        2x_1 + x_2 + x_3 \leq 3,
+        -x_1 - x_2 + x_3 \leq 1
+      }
+    }{
+      $x_1$, $x_2$, $x_3 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\qquad (B)\;
+\left\{
+  \begin{linearProg}{
+      minimize
+    }{
+      $ x_1 + x_2 - x_3$
+    }{
+      \systeme{
+        -x_1 - 2x_2 + 3x_3 \leq 1,
+        - x_1 - x_2 + 2x_3 \geq 2
+      }
+    }{
+      $x_1$, $x_2$, $x_3 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\]
+\[
+(C) \;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $3x_1 + 2x_2 + 3x_3$
+    }{
+      \systeme{
+        -x_1 - 2x_2 - 3x_3 \leq 5,
+        2x_1 + x_2 + x_3 \leq 3,
+        -x_1 - x_2 + x_3 \leq 1
+      }
+    }{
+      $x_1$, $x_2 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\qquad (D) \;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $-x_1 - x_2 + x_3$
+    }{
+      \systeme{
+        -x_1 + 2x_2 - 3x_3 + x_4 = 1,
+         x_1 + x_2 - 2x_3 \leq -2
+      }
+    }{
+      $x_1$, $x_2$, $x_3$, $x_4 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\]
+\[
+\qquad (E)\;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $ -x_1 - x_2 + x_3$
+    }{
+      \systeme{
+        -x_1 - 2x_2 + 3x_3 \leq 1,
+        - x_1 - x_2 + 2x_3 \geq 2
+      }
+    }{
+      $x_1$, $x_2$, $x_3 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\qquad (F)\;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $6x_1 + 4x_2 + 6x_3$
+    }{
+      \systeme{
+        -x_1 - 2x_2 - 3x_3 \leq 5,
+        2x_1 + x_2 + x_3 \leq 3,
+        x_1 + x_2 - x_3 \geq -1
+      }
+    }{
+      $x_1$, $x_2 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\]
+
+\section{Equivalence and Duality}
+
+\begin{question}{3}
+  Which previous programs are equivalent to each others? Sort them
+  into groups of equivalent classes.
+\end{question}
+
+\begin{question}{2}
+  Give standard form of $(F)$. What is the slack form of $(B)$?
+\end{question}
+
+\begin{question}{2}
+  What are the dual programs of $(A)$ and $(E)$?
+\end{question}
+
+\begin{question}{2}
+  Guess feasible solutions of $(A)$ and $(D)$.
+\end{question}
+
+\section{Simplex Algorithm}
+
+\begin{question}{4}
+  Solve linear program $(A)$ using the simplex algorithm.
+\end{question}
+
+\begin{question}{2}
+  Out of previous solution of $(A)$ give an optimal point of its
+  dual. What is its optimal objective value?
+\end{question}
+
+\begin{question}{5}
+  Solve dual of linear program $(E)$.
+\end{question}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

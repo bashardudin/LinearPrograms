@@ -1,0 +1,203 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english, french]{babel}
+\usepackage{fancyhdr}
+\usepackage[margin=.7in]{geometry}
+\usepackage{exsheets}
+\usepackage{enumerate}
+
+\usepackage{./Style/linearProgramsStyle} % This is a set of commands for maths content.
+
+\pagestyle{fancy}
+
+\renewcommand{\headrulewidth}{2pt}
+\fancyhead[L]{EPITA\_APPING2\_2019\_S8\_PROL}
+\fancyhead[R]{Juin 2018}
+
+\fancyfoot[C]{\textbf{\thepage}}
+\fancyfoot[L]{\textbf{Chargé de cours:} \textsc{B. Dudin}}
+
+\pretitle{\vspace{-.5\baselineskip} \begin{center}}
+  \title{%
+    { \huge Programmation linéaire}\\
+  }
+
+\posttitle{
+\end{center}
+  \begin{flushleft}
+    \vspace{2\baselineskip} \textit{
+      \!\!\emph{Durée de l'épreuve: 2h00.}\\
+      \! \emph{Les documents ne sont pas autorisés}  \\
+      Les caclulatrices non programmables sont autorisées.
+    }
+  \end{flushleft}
+  \rule{\textwidth}{1.5pt}
+  \vspace{-5\baselineskip}
+}
+\author{}
+\date{}
+
+\pdfinfo{
+   /Author (Bashar Dudin)
+   /Title  (Exam PROL APP -- 2018)
+   /Subject (Programmation lineaire)
+}
+
+\begin{document}
+
+\maketitle\thispagestyle{fancy}
+
+On considère les programmes linéaires suivants respectivement nommés
+$(A)$, $(B)$, $(C)$, $(D)$, $(E)$ et $(F)$.
+\[
+(A) \;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $x_1 - 2x_2 + x_3 + 5$
+    }{
+      \systeme{
+        x_1 - x_2 - 2x_3 \geq 5,
+        x_1 - x_2 + x_3 \leq 3,
+        -x_1 + 2x_2 + x_3 \leq 1
+      }
+    }{
+      $x_1$, $x_2 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\qquad (B)\;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $ x_1 + x_2 - x_3$
+    }{
+      \systeme{
+        -x_1 - 2x_2 + 3x_3 \leq 1,
+        - x_1 + x_2 + 2x_3 \geq 2
+      }
+    }{
+      $x_1$, $x_2$, $x_3 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\]
+\[
+(C) \;
+\left\{
+  \begin{linearProg}{
+      minimize
+    }{
+      $-x_1 - 2x_2 - 3x_3$
+    }{
+      \systeme{
+        - x_1 - 2x_2 - 3x_3 \leq 5,
+        - 2x_1 + x_2 + x_3 \geq 3,
+        - x_1 - x_2 + x_3 \leq 1
+      }
+    }{
+      $x_1$, $x_2 \geq 0.$
+    }
+  \end{linearProg}
+ \right.
+\qquad (D) \;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $x_1 + x_2 - x_3 + x_4 + 5 $
+    }{
+      \systeme{
+        x_1 - x_2 - 2x_3 + 2x_4 \geq 5,
+        x_1 + x_2 - x_3 + x_4 \leq 3,
+        -x_1 + 2x_2 + x_3 - x_4 \leq 1
+      }
+    }{
+      $x_1$, $x_2$, $x_3$, $x_4 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\]
+\[
+\qquad (E)\;\left\{
+  \begin{linearProg}{
+      minimize
+    }{
+      $ - x_1 - x_2 + x_3$
+    }{
+      \systeme{
+        -x_1 - 2x_2 + 3x_3 = 1 - x_4,
+        - x_1 + x_2 + 2x_3 \geq 2
+      }
+    }{
+      $x_1$, $x_2$, $x_3$, $x_4 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\qquad (F)\;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $x_1 + x_2$
+    }{
+      \systeme{
+        x_1 + 2x_2 \leq 4,
+        4x_1 + 2x_2 \leq 12,
+        -x_1 + x_2 \leq 1
+      }
+    }{
+      $x_1$, $x_2 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\]
+
+\section{Équivalence et dualité}
+
+\begin{question}{3}
+  Grouper les programmes linéaires précédents suivant leurs classes
+  d'équivalences ; deux programmes sont dans la même classe s'ils sont
+  équivalents.
+\end{question}
+
+\begin{question}{1}
+  Deviner des solutions admissibles de $(E)$ et de $(F)$.
+\end{question}
+
+\begin{question}{1}
+  Donner les tableaux associés à $(D)$ et $(C)$.
+\end{question}
+
+\begin{question}{2+1}
+  Quels sont les programmes linéaires qui n'ont pas une solution de
+  base admissible? Justifier le fait que $(B)$ ne soit pas borné.
+\end{question}
+
+\section{Algorithme du simplexe}
+
+\begin{question}{+2}
+  Quel est le nombre maximum d'itérations de l'algorithme du simplexe
+  (nombre d'opérations d'entrée-sortie en base) qu'on peut avoir dans
+  le cas de $(B)$?
+\end{question}
+
+\begin{question}{7}
+  Résoudre les programmes linéaires $(C)$ et $(F)$ en suivant
+  l'algorithme du simplex.
+\end{question}
+
+\begin{question}{6}
+  Est-ce que le programme linéaire $(D)$ est admissible? Si oui, en
+  donner une forme équivalente qui a une solution de base admissible.
+\end{question}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

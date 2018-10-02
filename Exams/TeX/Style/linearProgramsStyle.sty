@@ -1,0 +1,155 @@
+%%%% This package contains my shortcuts and predefined maths commands
+%%%% TeXing
+
+\ProvidesPackage{TeXingStyle}[2017/18/05 Styling Content]
+
+%%% Tex basics
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{enumerate}
+
+%%% Title Formatting
+\RequirePackage{titling}
+
+%%% Maths symbols and typographical engines.
+\RequirePackage{amsmath, amssymb, amsfonts, amsthm}
+
+%%% Coloring and box wrappers
+\RequirePackage{xcolor}
+\RequirePackage{colortbl}
+\RequirePackage{tcolorbox}
+\RequirePackage{wrapfig}
+
+%%% Systeme package for equations layouts
+\RequirePackage{systeme}
+
+%%% Formatting pseudo-code
+\RequirePackage{alltt}
+\RequirePackage{algpseudocode}
+\RequirePackage{algorithm}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\newcommand{\algorithmicbreak}{\textbf{break}}
+\newcommand{\Break}{\State \algorithmicbreak}
+
+%%% Code highlighting and formatting
+\RequirePackage{minted}
+
+%%% Needed packages for mathplotting to combine with gnuplot (needs to
+%%% shell-escape latex engine)
+\RequirePackage{pgfplots}
+\usepgfplotslibrary{fillbetween}
+\usepgfplotslibrary{colorbrewer}
+
+%%% Tikz library packages
+\RequirePackage{tikz, tkz-tab}
+\usetikzlibrary{colorbrewer}
+\usetikzlibrary{arrows, decorations.text}
+
+%%% Creating multicol documents
+\RequirePackage{multicol}
+
+%%% Links
+\RequirePackage{hyperref}
+
+%%% Enabling Frames with mdframed
+\RequirePackage{mdframed}
+\mdfsetup{skipabove=\topskip,skipbelow=\topskip}
+\global\mdfdefinestyle{questiondefault}{%
+  linewidth=.5pt,%
+  bottomline=true,%
+  topline=true,%
+  leftline=true,%
+  rightline=true
+}
+
+%%% Miscelaneous
+\RequirePackage{centernot}
+\RequirePackage{eurosym}
+
+%%% Setting up ExSheets
+\RequirePackage{exsheets}
+\newcommand*\pointsformat[1]{\,\, #1}
+\SetupExSheets{points/format=\pointsformat}
+\SetupExSheets{headings-format=\bfseries}
+\SetupExSheets{headings=runin}
+\SetupExSheets{solution/print=false}
+\SetupExSheets{question/type=exam}
+\SetupExSheets{question/skip-below=.5\baselineskip}
+\SetupExSheets{counter-format={se-qu[1].}}
+\SetupExSheets{question/pre-hook={\begin{mdframed}[style=questiondefault]}}
+\SetupExSheets{question/post-hook=\end{mdframed}}
+\renewcommand\thequestion{\thesection-\arabic{question}}
+
+%% Theoremlike environments
+\theoremstyle{plain}
+\newtheorem{thm}{Théorème}[section]
+\newtheorem{lem}[thm]{Lemme}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{cor}[thm]{Corollaire}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Définition}[section]
+\newtheorem{exmp}{Exemple}[section]
+\newtheorem{hyp}[thm]{Hypothèse}
+
+\theoremstyle{remark}
+\newtheorem{rem}{Remarque}
+\newtheorem*{nota}{Notation}
+\newtheorem*{affm}{Affirmation}
+\newtheorem{convention}{Convention}
+
+%%% Standard sets
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+
+%%% Fonts
+\renewcommand{\emph}[1]{\textit{\textbf{#1}}}
+\newcommand{\mr}[1]{\mathrm{#1}}
+\newcommand{\mc}[1]{\mathcal{#1}}
+\newcommand{\mf}[1]{\mathfrak{#1}}
+\newcommand{\mbf}[1]{\mathbf{#1}}
+\newcommand{\mbb}[1]{\mathbb{#1}}
+\newcommand{\ms}[1]{\mathscr{#1}}
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+\newcommand{\rmb}[1]{\rm{\bf{#1}}}
+
+%%% Standard operators
+\DeclareMathOperator{\dd}{d\!}  %% Integration element
+\DeclareMathOperator{\Di}{D\!}  %% Differential operator
+\DeclareMathOperator{\Ker}{Ker}  %% Kernel of a linear map
+\DeclareMathOperator{\Img}{Im}  %% Image of a linear map
+\DeclareMathOperator{\bigO}{\mathscr{O}}  %% Big O landau notation
+
+%% Standard notation
+\newcommand{\id}{\mathrm{id}}
+\newcommand{\abs}[1]{\lvert#1\rvert}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\Card}[1]{\mathrm{Card}\left(#1\right)}
+\newcommand{\pa}{\partial}
+
+%%% Linear Program formatting
+\newenvironment{linearProg}[4]{
+    \def\arraystretch{1.1}
+    \begin{tabular}{lc}
+        #1 & #2 \\
+        subject to & \\
+        & \sysdelim..{#3}\\
+      with & #4
+}{
+    \end{tabular}
+}
+
+%%% General optimisation problem formatting
+\newenvironment{PbOptim}[3]{
+    \def\arraystretch{1.1}
+    \begin{tabular}{lc}
+        #1 & #2 \\
+        subject to & \\
+        & #3
+}{
+    \end{tabular}
+}

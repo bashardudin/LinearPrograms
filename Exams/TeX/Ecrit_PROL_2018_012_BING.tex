@@ -1,0 +1,195 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{fancyhdr}
+\usepackage[margin=.7in]{geometry}
+\usepackage{exsheets}
+\usepackage{enumerate}
+
+\usepackage{./Style/linearProgramsStyle} % This is a set of commands for maths content.
+
+\pagestyle{fancy}
+
+\renewcommand{\headrulewidth}{2pt}
+\fancyhead[L]{EPITA\_ING1\_BING\_2020\_S5\_PROL}
+\fancyhead[R]{January 2018}
+
+\fancyfoot[C]{\textbf{\thepage}}
+\fancyfoot[L]{}
+
+\pretitle{\vspace{-.5\baselineskip} \begin{center}}
+\title{%
+  { \huge Linear Programming (PROL)}%
+}
+\posttitle{
+\end{center}
+  \begin{flushleft}
+    \vspace{3\baselineskip} \textit{
+      \!\!\emph{Duration: 1h30.}\\
+      \! \emph{No documents are allowed.}  \\
+      Only \emph{non-programmable} pocket calculators are allowed.
+    }
+  \end{flushleft}
+  \rule{\textwidth}{1.5pt}
+  \vspace{-5\baselineskip}
+}
+\author{}
+\date{}
+
+\pdfinfo{
+   /Author (Bashar Dudin)
+   /Title  (PROL Exam -- 2018)
+   /Subject (Linear Programming)
+}
+
+\begin{document}
+
+\maketitle\thispagestyle{fancy}
+
+We're considering the following list of linear programs respectively
+given the names $(A)$, $(B)$, $(C)$, $(D)$ and $(E)$, $(F)$.
+\[
+(A) \;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $x_1 + x_2 + x_3$
+    }{
+      \systeme{
+        2x_1 + 3x_2 + x_3 \leq 1,
+        x_1 - 4x_2 + 3x_3 \geq 2
+      }
+    }{
+      $x_1$, $x_2 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\qquad (B)\;
+\left\{
+  \begin{linearProg}{
+      minimize
+    }{
+      $- x_1 - x_2 - x_3 + x_4$
+    }{
+      \systeme{
+        2x_1 + 3x_2 + x_3 - x_4 + \leq 1,
+        -x_1 + 4x_2 - 3x_3 + 3x_4 \leq -2
+      }
+    }{
+      $x_1$, $x_2$, $x_3$, $x_4 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\]
+\[
+(C) \;
+\left\{
+  \begin{linearProg}{
+      minimize
+    }{
+      $-5x_1 - 6x_2 - 9x_3 - 8x_4$
+    }{
+      \systeme{
+        x_1 + 2x_2 + 3x_3 + x_4 \leq 5,
+        -x_1 - x_2 - 2x_3 - 3x_4 \geq -3
+      }
+    }{
+      $x_1$, $x_2$, $x_3$, $x_4 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\qquad (D) \;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $5x_1 + 6x_2 + 9x_3 + 8x_4$
+    }{
+      \systeme{
+        x_1 + 2x_2 + 3x_3 + x_4 \leq 5,
+        x_1 + x_2 + 2x_3 + 3x_4 \leq 3
+      }
+    }{
+      $x_1$, $x_2$, $x_3$, $x_4 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\]
+\[
+(E) \;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $x_1 - 2x_2 - x_3$
+    }{
+      \systeme{
+        2x_1 + x_2 - x_3 \leq -1,
+        x_1 - 2x_2 + x_3 \leq -2
+      }
+    }{
+      $x_1$, $x_2$, $x_3 \geq 0.$
+    }
+  \end{linearProg}
+\right.\qquad (F)\;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $5x_1 + 6x_2 + 9x_3 + 8x_4$
+    }{
+      \systeme{
+        x_1 + 2x_2 + 3x_3 + x_4 \leq 5,
+        x_1 + x_2 + 2x_3 + 3x_4 + x_5 = 3
+      }
+    }{
+      $x_1$, $x_2$, $x_3$, $x_4$, $x_5 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\]
+
+\section{Equivalence and Duality}
+
+\begin{question}
+  Which previous programs are equivalent to each others? Sort them
+  into groups of equivalent classes.
+\end{question}
+
+\begin{question}
+  Give standard form of $(F)$. What is the slack form of $(E)$?
+\end{question}
+
+\begin{question}
+  What are the dual programs $(C)$ and $(D)$?
+\end{question}
+
+\begin{question}
+  Which programs $(D)$, $(E)$ and $(F)$ have basic feasible
+  solution?  Give a feasible solution of $(A)$.
+\end{question}
+
+\newpage
+\section{Simplex Algorithm}
+
+\begin{question}
+  Solve linear program $(D)$.
+\end{question}
+
+\begin{question}
+  Out of previous solution of $(D)$ give a solution of its dual.
+\end{question}
+
+\begin{question}
+  Transform program $(E)$ into an equivalent linear program having
+  feasible basic solution.
+\end{question}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

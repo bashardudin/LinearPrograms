@@ -1,0 +1,69 @@
+%%%% This package contains my shortcuts and predefined commandes for
+%%%% the Mimo project.
+
+\ProvidesPackage{linearProgramsStyle}[2016/03/03 Styling Content]
+
+\RequirePackage{amsmath, amssymb, amsfonts}
+\RequirePackage{xcolor}
+\RequirePackage{colortbl}
+\RequirePackage{tcolorbox}
+\RequirePackage{wrapfig}
+\RequirePackage{systeme}
+
+\RequirePackage{minted}
+\RequirePackage{alltt}
+\RequirePackage{algpseudocode}
+\RequirePackage{algorithm}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\newcommand{\algorithmicbreak}{\textbf{break}}
+\newcommand{\Break}{\State \algorithmicbreak}
+
+\RequirePackage{pgfplots}
+\usepgfplotslibrary{fillbetween}
+\usepgfplotslibrary{colorbrewer}
+
+\RequirePackage{tikz, tkz-tab}
+\usetikzlibrary{colorbrewer}
+
+\RequirePackage{multicol}
+\RequirePackage{hyperref}
+\RequirePackage{centernot}
+
+%%% Usual commands
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+
+% Fonts
+
+\renewcommand{\emph}[1]{\textit{\textbf{#1}}}
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+
+\DeclareMathOperator{\dd}{d\!}
+
+%%% Custom envriroments and commands
+
+\newenvironment{linearProg}[4]{
+    \def\arraystretch{1.1}
+    \begin{tabular}{lc}
+        #1 & #2 \\
+        sujet \`a & \\
+        & \sysdelim..{#3} \\
+        avec & #4
+}{
+    \end{tabular}
+}
+
+\newenvironment{linearProgG}[3]{
+    \def\arraystretch{1.1}
+    \begin{tabular}{lc}
+        maximiser & #1 \\
+        sujet \'a & \\
+        & #2 \\
+        avec & #3
+}{
+    \end{tabular}
+}

@@ -1,0 +1,563 @@
+\documentclass[aspectratio = 169]{beamer}
+
+\usepackage[utf8]{inputenc} % Character encoding.
+
+\pdfinfo{
+   /Author (Bashar Dudin)
+   /Title  (The Simplex Algorithm II)
+   /Subject (Linear Programs)
+}
+
+
+\usepackage{./Style/linearProgramsBeamer} % This is extra styling for Beamer environments.
+\usepackage{./Style/linearProgramsStyle} % This is a set of commands for maths content.
+
+%-------------------------------------------------------------------------------
+%   TITLE PAGE
+%-------------------------------------------------------------------------------
+
+\author[BD]{Bashar Dudin}
+
+\institute[]{EPITA}
+
+\title{Linear Programs} %
+\subtitle{The Simplex Algorithm II}
+
+%-------------------------------------------------------------------------------
+%   DOCUMENT BODY
+%-------------------------------------------------------------------------------
+
+\begin{document}
+
+\begin{frame}[plain]
+\titlepage % Print the title page as the first slide
+\end{frame}
+
+\begin{frame}{Où on en est, à quoi on fait face.}
+  La procédure adoptée jusqu'à présent s'est toujours terminée jusqu'à
+  présent. Notre conjecture de base est qu'elle nous renvoie un point
+  optimal du programme linéaire de départ. Pour l'instant on ne peut
+  pas en être certains. Par bien des égards ce qu'on a fait jusqu'à
+  présent est loin d'être satisfaisants. Étant donné un programme
+  linéaire $L$, voici la liste des choses auxquelles on n'a pas encore
+  répondu:
+    \begin{itemize}
+    \item[\textcolor<6>{lightgray}{\textbullet}]<1->
+      \textcolor<6>{lightgray}{on a aucun moyen de teste si $L$ est
+        admissible.}
+    \item[\textcolor<6>{lightgray}{\textbullet}]<2->
+      \textcolor<6>{lightgray}{Comment traiter le cas où la solution
+        de base n'est pas admissible?}
+        \item[\textbullet]<3->
+          Comment vérifier si $L$ n'est pas majoré?
+        \item[\textbullet]<4-> Est-ce que la procédure qu'on a pu
+          tester jusqu'à présent se termine en général?
+        \item[\textcolor<6>{lightgray}{\textbullet}]<5->
+          \textcolor<6>{lightgray}{Si la procédure se termine, est-ce
+            qu'on a une valeur optimale?}
+    \end{itemize}
+\end{frame}
+
+\section{Pivoter}
+
+\begin{frame}{Pivoter | Fixer la notatiion}
+  Dans le but de répondre aux deux questions précédentes il va nous
+  falloir écrire au propre les algorithmes qu'on a testé à la main. On
+  considère le programme llinéaire $L$
+  \begin{figure}
+    \alt<4>{
+      \textcolor{orange}{
+        \begin{linearProgG}{
+            ${\displaystyle z - \sum_{j=1}^n c_jx_j} = \nu$
+          }{
+            ${\displaystyle \forall i \in \{1, \ldots, m\}, \quad \sum_{j=1}^n a_{ij}x_j + x_{i+m} = b_i}$
+          }{
+            $\forall j \in N\cup B, \quad x_j \geq 0$
+          }
+        \end{linearProgG}
+      }
+    }{
+      \alt<3>{
+        \begin{linearProgG}{
+            ${\displaystyle z = \nu + \sum_{j=1}^n c_jx_j}$
+          }{
+            ${\displaystyle \forall i \in \{1, \ldots m \}, \quad x_{i+m} = b_i - \sum_{j=1}^n a_{ij}x_j}$
+          }{
+            $\forall j \in N\cup B, \quad x_j \geq 0.$
+          }
+        \end{linearProgG}
+      }{
+        \begin{linearProgG}{
+            ${\displaystyle z = \nu + \sum_{j=1}^n c_jx_j}$
+          }{
+            ${\displaystyle \forall i \in \{1, \ldots, m\}, \quad \sum_{j=1}^n a_{ij}x_j \leq b_i}$
+          }{
+            $\forall j \in N, \quad x_j \geq 0$
+          }
+        \end{linearProgG}
+      }
+    }
+    \end{figure}
+    \begin{overlayarea}{\textwidth}{.3\textheight}
+        \begin{onlyenv}<1>
+          On écrit
+            \begin{itemize}
+            \item[\textbullet]
+              $\bs{A}$ pour la matrice de taille $(m, n)$ des coéfficients
+              $\big(a_{ij}\big)_{\substack{1 \leq i \leq m \\ 1 \leq j \leq n}}$
+            \item[\textbullet]
+              $\bs{b}$ pour le $m$-tuple $(b_1, \ldots, b_m)$
+            \item[\textbullet]
+              $\bs{c}$ pour le $n$-tuple $(c_1, \ldots, c_n)$.
+            \end{itemize}
+            Noter que $\nu$ est la valeur objective de la solution de
+            base.
+        \end{onlyenv}
+        \begin{onlyenv}<2> Le programme linéaire $L$ dans cette forme
+          est décrit par la donnée $(\bs{A}, \bs{b}, \bs{c},
+          \nu)$. Le programme initial a en général $\nu = 0$.
+        \end{onlyenv}
+        \begin{onlyenv}<3-> Pour encoder la forme slack on inclus
+          également les données $N$, $B$ des indices de variables
+          hors-base et de base. Une forme slack est donc donnée par
+          $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$. L'ensemble $N$ est
+          initialisé à $\{1, \ldots, n\}$ et $B$ à
+          $\{n+1, \ldots, n+m\}$. \pause[4] \textcolor{orange}{Pour se
+            rapprocher de l'écriture d'un système linéaire on modifie
+            légérement l'écriture de la forme slack.}
+        \end{onlyenv}
+    \end{overlayarea}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Pivoter | Le tableau d'un programme linéaire}
+  Les contraintes linéaires de $L$ dans la forme slack représente une
+  matrice $(m, n+m)$ notée $\underline{\bs{A}}$ et obtenue comme
+  concaténation de $\bs{A}$ et $\bs{I}_m$ le long des lignes de
+  $\bs{A}$. Le \emph{tableau} $T$ de $L$ est obtenu en
+  \begin{itemize}
+  \item<2-> concatenant $\underline{\bs{A}}$ et $b^T$ le long des
+    colonnes de $A$
+  \item<3-> concatenant les résultat avec le vecteur
+    $(-c_1, \ldots, -c_n, 0, \ldots 0, \nu)$ de taille $n+m+1$ le long
+    des lignes de $\bs{A}$.
+  \end{itemize}
+  \pause[4]
+  \begin{figure}
+    \begin{tabular}{c|ccc|cccc|c|}
+       & \alert{$\bs{x_1}$} & \alert{$\cdots$} & \alert{$\bs{x_n}$} & \alert{$\bs{x_{n+1}}$} & \alert{$\bs{x_{n+2}}$} & \alert{$\cdots$} & \alert{$\bs{x_{n+m}}$} &  \\
+      \hline
+       & $-c_1$ & $\cdots$ & $-c_n$ & $0$ & $0$ & $\cdots$ & $0$ & $\nu$ \\
+      \hline
+      \alert{$\bs{n+1}$} & $a_{11}$ & $\cdots$ & $a_{1n}$ & $1$ & $0$ & $\cdots$ & $0$ & $b_1$ \\
+      \alert{$\bs{n+2}$}& $a_{21}$ & $\cdots$ & $a_{2n}$ & $0$ & $1$ & $\cdots$ & $0$ & $b_2$ \\
+      \alert{$\vdots$}& $\vdots$ & $\ddots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\ddots$ & $\vdots$ & $\vdots$ \\
+      \alert{$\bs{n+m}$} & $a_{m1}$ & $\cdots$  & $a_{mn}$  & $0$ & $\cdots$ & $\cdots$ & $1$ & $b_m$
+    \end{tabular}
+  \end{figure}
+  Le tableau $T$ est de taille $(m + 1, n + m + 1)$.
+\end{frame}
+
+\begin{frame}[fragile]{Pivoter}
+  We are given input $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ and two
+  indexes $e \in N$, $l\in B$ respectively corresponding to
+  entering and leaving variables to and from the set of \textit{basic}
+  variables $B$.
+    \begin{columns}
+        \begin{column}{.5\textwidth}
+            \begin{itemize}
+                \item[\textbullet]<2->
+                  Express $x_e$ in terms of other variables in
+                  equation $l$
+                \item[\textbullet]<3->
+                  Replace $x_e$ by previously obtained expression in
+                  linear constraints
+                \item[\textbullet]<4->
+                  Replace $x_e$ by corresponding expression in the
+                  value function
+                \item[\textbullet]<5->
+                  Update basic and none basic sets of variables.
+            \end{itemize}
+        \end{column}
+        \begin{column}{.5\textwidth}
+            \begin{overlayarea}{.96\textwidth}{.45\textheight}
+            \begin{onlyenv}<2->
+                \begin{tcolorbox}[
+                    enhanced,
+                    parbox = false,
+                    colback = mLightBrown!10!white,
+                    colframe = mLightBrown,
+                    arc = 0mm,
+                    ]
+                    \small{
+                    \mint{python}{T[l, :] = (1/T[l, e])*T[l, :]}
+                    }
+                    \end{tcolorbox}
+            \end{onlyenv}
+            \begin{onlyenv}<3->
+                \begin{tcolorbox}[
+                    enhanced,
+                    parbox = false,
+                    colback = mLightBrown!10!white,
+                    colframe = mLightBrown,
+                    arc = 0mm,
+                    ]
+                    \small{
+                      \begin{minted}[autogobble]{python}
+                        if i != l:
+                          T[i, :] -= T[i, e]*T[l, :]
+                      \end{minted}
+                    }
+                \end{tcolorbox}
+            \end{onlyenv}
+            \begin{onlyenv}<5>
+                \begin{tcolorbox}[
+                    enhanced,
+                    parbox = false,
+                    colback = mLightBrown!10!white,
+                    colframe = mLightBrown,
+                    arc = 0mm,
+                    ]
+                    \small{
+                      \begin{minted}[autogobble]{python}
+                        N.insert(N.index(e), l).remove(e)
+                        B.insert(B.index(l), e).remove(l)
+                      \end{minted}
+                    }
+            \end{tcolorbox}
+            \end{onlyenv}
+        \end{overlayarea}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Pivoter | Full Function}
+     \small{
+      \begin{minted}[linenos]{python}
+        def pivot(N, B, T, e, l):
+            """Pivoting in linear programs.
+
+            Pivots entering and leaving variables in linear
+            program given as tableau. Done in place.
+            """
+            T[l, :] = (1/T[l, e])*T[l, :]
+            for i in range(m+1):
+                if i != l:  # ugly
+                    T[i, :] -= T[i, e]*T[i, :]
+            N.insert(N.index(e), l).remove(e)
+            B.remove(B.index(l), e).remove(l)
+      \end{minted}
+    }
+\end{frame}
+
+\begin{frame}{Pivoter | Full Function}
+  \begin{itemize}
+  \item<1->
+    Index $e$ is an element of $N$ and $l$ one of $B$.
+  \item<2->
+    There better be no entries $e$, $l$ such that
+    \mintinline{python}{T[l, e] == 0}. We shall ensure this is never
+    the case when \mintinline{python}{pivot} is used.
+  \item<3->
+    The objective value and basic solution of obtained linear program
+    can be read on last column to the right.
+  \end{itemize}
+\end{frame}
+
+\section{Détecter le fait de ne pas être borné}
+
+\begin{frame}{Tester la non \emph{bornitude}}
+  On note $L$ le programme linéaire en forme standard
+  \begin{figure}
+    \begin{linearProgG}{
+        ${\displaystyle z = \nu + \sum_{j=1}^n c_jx_j}$
+      }{
+        ${\displaystyle \forall i \in \{1, \ldots, m\}, \quad \sum_{j=1}^n a_{ij}x_j \leq b_i}$
+      }{
+        $\forall j \in N, \quad x_j \geq 0$
+      }
+    \end{linearProgG}
+  \end{figure}
+  \begin{halfshyblock}{Fait}
+    \begin{onlyenv}<1
+      >S'il y a un indice $j$ tel que $c_j > 0$ et
+      tous les coéfficients de $x_j$ dans les contraintes linéaires
+      sont négatifs alors $L$ est non majoré.
+    \end{onlyenv}
+    \begin{onlyenv}<2-
+      >\!\alert{De manière équivalent, s'il y a une
+        colonne dans le tableau de $L$ ayant une première entrée
+        négative non nulle et toutes les autres négatives alors $L$
+        est non majoré. if there was a column in the program's tableau
+        having negative first entry and only non-positive ones
+        afterwards then $L$ is unbounded.}
+    \end{onlyenv}
+    \end{halfshyblock}
+\end{frame}
+
+\begin{frame}{Tester la non \emph{bornitude}}
+  En utilisant le fait précédent, à chaque appel de
+  \mintinline{python}{pivot}, on teste si on ne satisfait pas la
+  propriété:
+  \begin{quote}
+    Il existe un indice $j$ tel que $c_j > 0$ et tous les autres
+    coefficients de $x_j$ dont négatifs ou nuls.
+    \end{quote}
+    \pause
+    C'est une condition nécessaire, pour l'instant on a aucune
+    garantie qu'on tombe dans une telle situation quand $L$ n'est pas
+    majoré. Le fait que ce soit le cas vient des résultats de dualité.
+    \pause
+    Pour l'instant on va devoir accepter que ce test naïf sera
+    suffisant.
+\end{frame}
+
+\section{The Simplex Algorithm : Second Try}
+
+\begin{frame}[fragile]{The Simplex Algorithm \emph{Restricted}}
+  \begin{overlayarea}{1.1\textwidth}{.75\textheight}
+  \setlength{\columnsep}{-10pt}
+  \begin{multicols}{2}
+    \scriptsize{
+      \begin{minted}[autogobble, linenos, breaklines]{python}
+        # Under construction function!
+        def _simplex(N, B, T):
+            """Restricted simplex algorithm
+
+            Runs simplex algorithm on basic feasible
+            linear program in slack form.
+
+            Args:
+              N, B (list[int]): lists of non-basic
+              and basic variables.
+              T (ndarray[float]): numpy array for
+              tableau of linear program.
+            Output:
+              (ndarray[float]) vector tail of which
+              is maximal objective value, rest is
+              optimal point.
+            """
+            m, margins = len(B), dict()
+            aug_var = [i for i in N if T[0, i] < 0]
+            while aug_var:
+              e = random.choice(augmenting_var)
+              for i in range(m):
+                if T[i, e] > 0:
+                  margins[B[i]] = T[i, -1]/T[i, e]
+              if not margins:
+                raise Exception("Unbounded LP")
+              min_margin = min(margins.values())
+              minima = [i for i in margins\
+                        if margins[i] == min_margin]
+              l = random.choice(minima)
+              pivot(N, B, T, e, l)
+              aug_var = [i for i in N if T[0, i] < 0]
+            return T[:, -1]
+      \end{minted}
+    }
+  \end{multicols}
+  \end{overlayarea}
+\end{frame}
+
+% \begin{frame}{The Simplex Algorithm : First Validity Checks}
+%   There are two things we need to check in order to temporarily
+%   accept the previous version of the simplex algorithm
+%     \begin{enumerate}
+%         \item<2->
+%           after each call to \mintinline{python}{pivot} the linear
+%           program we get has feasible basic solution
+%         \item<3->
+%           \textcolor<4->{lightgray}{the objective value does not
+%             decrease while looping}
+%           \only<4->{\textcolor{orange}{\textbf{(We choose it that
+%                 way!)}}}
+%     \end{enumerate}
+%     \pause[5]
+%     and a last point to \textit{understand} :
+%     \begin{enumerate}
+%         \item[3.]
+%           what does it mean for \mintinline{python}{_simplex} not to terminate? how
+%           can we deal with it?
+%     \end{enumerate}
+% \end{frame}
+
+% \begin{frame}[fragile]{Feasability of the basic solution after each call for \mintinline{python}{pivot}}
+%     \setlength\columnseprule{.1pt}
+%     \begin{multicols}{2}
+%       Input is an LP $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ having
+%       feasible basic solution, i.e. \mintinline{python}{T[1:, -1]} is
+%       non-negative. We show effect of \mintinline{python}{pivot}
+%       leaves an LP with feasible basic solution as well. Since
+%       \mintinline{python}{pivot} is called, \mintinline{python}{T[l, e] > 0}.
+
+%       \pause
+%       Updates of $\bs{b}$ are give by the relations
+%       \small{
+%       \begin{minted}[autogobble]{python}
+%         T[l, -1] = (1/T[l, e])*T[l, -1]
+%       \end{minted}
+%       }
+%       and for each $i \in \{1, \ldots, m+1\}$
+%       \small{
+%         \begin{minted}[autogobble]{python}
+%           T[i, -1] -= (T[i, e]/T[l, e])*T[i, -1]
+%         \end{minted}
+%       }
+%       \pause
+%       The only possibility for such updates to give a negative result
+%       is when \mintinline{python}{T[i, e] > 0}. In that case
+%       \mintinline{python}{_simplex} chooses \mintinline{python}{l} in such a
+%       way that
+%       \small{
+%       \begin{minted}[autogobble]{python}
+%         T[l, -1]/T[l, e] <= T[i, -1]/T[i, e]
+%       \end{minted}
+%       }
+%       \pause
+%       Therefore, if \mintinline{python}{-T[i, e] < 0}, mutliplying
+%       previous inequality by it and adding \mintinline{python}{T[i, -1]}
+%       we get that update after \mintinline{python}{pivot} is
+%       non-negative.
+%     \end{multicols}
+% \end{frame}
+
+\begin{frame}{Boucler}
+  À chaque fois qu'on entre dans la boucle \mintinline{python}{while}
+  de \mintinline{python}{_simplex} ou bien on \textit{augmente la
+    valeur objective} ou alors on découvre que le PL est non-majoré. A
+  priori, \mintinline{python}{_simplex} pourrait s'executer
+  indéfiniment, en itérant entre des formes slack équivalentes ayant
+  une valeur objective constante. On va chercher à étudier ce
+  phénomène.
+  \pause
+    \begin{prop}[\textbf{C}]
+      Soit $L$ un PL $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ où $\bs{A}$
+      est une matrice $(m, n)$. Si la boucle de
+      \mintinline{python}{_simplex} s'exécute plus de $\binom{n+m}{m}$
+      fois, alors l'algorithme boucle, i.e. la boucle s'exécute
+      indéfiniment en alternant entre un nombre fini de formes slack
+      ayant la même valeur objective.
+    \end{prop}
+    \begin{rem}
+      Cela signifie que dès que \mintinline{python}{_simplex} entre
+      dans sa boucle principale plus $\binom{n+m}{m}$ fois alors on
+      peut retourner la valeur objective et la solution de base
+      courante.
+    \end{rem}
+    \end{frame}
+
+    % \begin{frame}{Cycling}
+    %     The proof of the above proposition is based on two facts :
+    %     \begin{itemize}
+    %     \item if we ever get back to a previously obtained slack form,
+    %       then we are going to have the same set of options we had for
+    %       equivalent slack forms once again.
+    %     \item There is only a finite set of possible slack forms for
+    %       the same given linear program.
+    %     \end{itemize}
+    %     \pause
+    %     The second point is the only point we need to make clear.
+    % \end{frame}
+
+    % \begin{frame}{Cycling}
+    %     \begin{lem}[$\bs{B}$]
+    %       Let $L$ be an LP given by $(\bs{A}, \bs{b}, \bs{c})$. A
+    %       slack form of $L$ appearing in \mintinline{python}{_simplex}
+    %       is determined by the choice of a set $B$ of basic variables.
+    %     \end{lem}
+    %     \pause
+    %     \setlength\columnseprule{.1pt}
+    %     \begin{multicols}{2}
+    %         \begin{demo}
+    %           Such slack forms $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$
+    %           and $(N, B, \bs{A'}, \bs{b'}, \bs{c'}, \nu')$ are
+    %           equivalent through the identity map.  \pause
+    %           Substracting the linear constraints, we get the
+    %           relations :
+    %           \[
+    %           0 = (\nu - \nu') + \sum_{j \in N} (c_j - c_j')x_j
+    %           \]
+    %           and for each $i \in B$
+    %           \[
+    %           0 = (b_i - b_i') - \sum_{j \in N} (a_{ij} - a_{ij}')x_j.
+    %           \]
+    %           We're abusing notation here ; index of coefficients is
+    %           the one corresponding to line of $\bs{A}$ supporting
+    %           basic variable $i$.
+
+    %           \pause These relations being true for any vector
+    %           $(x_1, \ldots, x_n)$ it is clear that for each $i \in B$
+    %           and $j \in N$ we have  $\nu = \nu'$, $b_i = b_i'$, $c_j = c_j'$,
+    %           $a_{ij} = a_{ij}'$.
+    %         \end{demo}
+    %     \end{multicols}
+    % \end{frame}
+
+\begin{frame}{Boucler}
+  Rajouter un compteur de boucle à l'algo du
+  \mintinline{python}{_simplex} garanti la terminaison de
+  \mintinline{python}{_simplex}.
+  \pause
+  \begin{rem}
+    Cette solution n'est pas intélligente. Il y a plusieurs solutions
+    à ce problème en pratique. Dans notre cas on implémente la règle
+    de \emph{Bland}: à chaque choix d'indice aux lignes $21$ et $30$
+    de \mintinline{python}{_simplex}, on choisit le plus petit
+    possible.
+  \end{rem}
+\end{frame}
+
+\begin{frame}[fragile]{The Simplex Algorithm \emph{Restricted} | No Cycling Version}
+  \begin{overlayarea}{1.1\textwidth}{.75\textheight}
+  \setlength{\columnsep}{-10pt}
+  \begin{multicols}{2}
+    \scriptsize{
+      \begin{minted}[autogobble, linenos, breaklines]{python}
+        def _simplex(N, B, T):
+            """Restricted simplex algorithm
+
+            Runs simplex algorithm on basic feasible
+            linear program in slack form.
+
+            Args:
+              N, B (list[int]): lists of non-basic
+              and basic variables.
+              T (ndarray[float]): numpy array for
+              tableau of linear program.
+            Output:
+              (ndarray[float]) vector tail of which
+              is maximal objective value, rest is
+              optimal point.
+            """
+            m = len(B)
+            l, margin = None, float('inf')
+            aug_var = [i for i in N if T[0, i] < 0]
+            while aug_var:
+              e = min(augmenting_var)
+              for i in range(m):
+                if T[i, e] > 0:
+                   if T[i, -1]/T[i, e] < margin:
+                     margin = T[i, -1]/T[i,e]
+                     l = i
+              if not l:
+                raise Exception("Unbounded LP")
+              pivot(N, B, T, e, l)
+              aug_var = [i for i in N if T[0, i] < 0]
+            return T[:, -1]
+      \end{minted}
+    }
+  \end{multicols}
+  \end{overlayarea}
+\end{frame}
+
+\begin{frame}
+  \centering
+  {\huge \textbf{C'est tout pour aujourd'hui!}}
+\end{frame}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

@@ -1,0 +1,79 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{fancyhdr}
+\usepackage[margin=1in]{geometry}
+\usepackage{exsheets}
+\usepackage{enumerate}
+
+\usepackage{./Style/linearProgramsStyle} % This is a set of commands for maths content.
+
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{2pt}
+\fancyhead[L]{EPITA\_ING1\_BING\_2020\_S5\_PROL}
+\fancyhead[R]{Janvier 2018}
+
+\fancyfoot[C]{\textbf{\thepage}}
+\fancyfoot[L]{}
+
+\SetupExSheets{solution/print=false}
+\SetupExSheets{question/type=exam}
+\SetupExSheets[points]{name=point,name-plural=points}
+\RenewQuSolPair{question}[name={\large Exercise}]{solution}
+
+\begin{document}
+\begin{center}
+
+  {\Large \textbf{Linear Programming (PROL)\footnote{Head of course : P.~Siarry.}}}\\
+
+  \vspace{10pt}
+  {\Large \textit{Final Exam}}
+
+  \vspace{2\baselineskip}
+\end{center}
+\begin{center}
+\begin{minipage}{\textwidth}
+  Duration of the exam : 1h30\\
+  \textbf{No documents are allowed}\\
+  Only \emph{non-programmable} pocket calculators are allowed.
+\end{minipage}
+\end{center}
+\rule{\textwidth}{2pt}
+\vspace{2\baselineskip}
+
+\noindent Let $(P)$ be the following linear program:
+\begin{center}
+\begin{linearProg}{
+maximize
+}{
+$z = x_1 + 5x_2 + 3x_3$
+}{
+\systeme{
+  x_1 + 3x_2 + 8x_3 \leq 2,
+  x_1 + 6x_2 + 2x_3 \geq 8
+}
+}{
+$x_1$, $x_2$, $x_3 \geq 0$
+}
+\end{linearProg}
+\end{center}
+
+\begin{enumerate}
+\item Solve the linear program $(P)$ using the simplex algorithm in
+  its tableau form.
+\item Write down the dual linear program $(D)$ of $(P)$.
+\item Using answer to question (1.) write down an optimal tableau of
+  $D$.
+\item Using the simplex algorithm solve the linear program $(D)$
+  starting at its expression given by the answer to question (2.).
+\item Compare results of questions (3.) and (4.). Are both obtained
+  optimal tableaux of $(D)$ identical?
+\end{enumerate}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

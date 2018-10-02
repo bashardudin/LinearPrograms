@@ -1,0 +1,389 @@
+\documentclass[32pt, aspectratio = 169]{beamer}
+
+\usepackage[utf8]{inputenc} % Character encoding.
+
+\pdfinfo{
+   /Author (Bashar Dudin)
+   /Title  (Simplex Algorithm Pre-Treatment)
+   /Subject (Linear Programs)
+}
+
+
+\usepackage{./Style/linearProgramsBeamer} % This is extra styling for Beamer environments.
+\usepackage{./Style/linearProgramsStyle} % This is a set of commands for maths content.
+
+%-------------------------------------------------------------------------------
+%   TITLE PAGE
+%-------------------------------------------------------------------------------
+
+\author[BD]{Bashar Dudin}
+
+\institute[]{EPITA}
+
+\title{Linear Programs} %
+\subtitle{Initializing The Simplex Algorithm}
+
+%-------------------------------------------------------------------------------
+%   DOCUMENT BODY
+%-------------------------------------------------------------------------------
+
+\begin{document}
+
+\begin{frame}[plain]
+    \titlepage % Print the title page as the first slide
+\end{frame}
+
+\begin{frame}{Where We Stand, What We Face?}
+
+  We now have an algorithm \textsc{Simplex} (\textit{Restricted}),
+  which is conjectured to solve linear programs. For the time being
+  we've shown that it terminates either by specifying that we have an
+  unbounded linear program, or by returning a finite value
+  \textit{expected} to be the maximum we are looking for.
+
+  Uptill now, we've been working under the following two assumptions :
+  \begin{itemize}
+  \item
+    Our linear program is \emph{feasible} ; meaning that it has at
+    least one feasible solution
+  \item
+    The basic solution of the initial slack form is feasible.
+  \end{itemize}
+
+  \pause
+  During this lecture, we are going to build a function
+  \mintinline{python}{init_simplex} taking in a linear program
+  $(\bs{A}, \bs{b}, \bs{c}, \nu)$ and either returning back the fact
+  it is \emph{not} feasible or a linear program
+  $(N, B, \underline{\bs{A}}, \underline{\bs{b}}, \underline{\bs{c}},
+  \nu)$ in slack form having feasible basic solution.
+\end{frame}
+
+\section{Feasibility}
+
+\begin{frame}{Deciding On Feasibility}
+  \begin{columns}[T]
+    \begin{column}{.5\textwidth}
+      Let $L$ be the linear program, given in standard form:
+      \begin{figure}
+        \begin{linearProgG}{
+            ${\displaystyle z = \nu + \sum_{j=1}^n c_jx_j}$
+          }{
+            ${\displaystyle \forall i \in \{1, \ldots, m\}, \quad \sum_{j=1}^n a_{ij}x_j \leq b_i}$
+          }{
+            $\forall j \in N, \quad x_j \geq 0$
+          }
+        \end{linearProgG}
+      \end{figure}
+    \end{column}
+    \begin{column}{.58\textwidth}
+      \pause
+      \begin{tcolorbox}[
+        enhanced,
+        parbox = true,
+        colback = mLightBrown!30!white,
+        colframe = mLightBrown!30!white,
+        arc = 0mm,
+        ]
+        Out of $L$ we build the following auxiliary linear program $L_{m}$:
+        \vspace{-1em}
+        \begin{figure}
+          \begin{linearProgG}{
+              ${\displaystyle z = - x_0}$
+            }{
+              ${\displaystyle \forall i \in \{1, \ldots, m\}, \quad \sum_{j=1}^n a_{ij}x_j - x_0\leq b_i}$
+            }{
+              $\forall j \in N\cup \{0\}, \quad x_j \geq 0$
+            }
+          \end{linearProgG}
+        \end{figure}
+      \end{tcolorbox}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Deciding On Feasibility}
+    \begin{prop}
+      $L$ is feasible if, and only if, the optimal objective value of
+      $L_{m}$ is $0$.
+    \end{prop}
+    \begin{overlayarea}{\textwidth}{.8\textheight}
+        \vspace{.2\baselineskip}
+    \begin{onlyenv}<2-4>
+        \setlength\columnseprule{.1pt}
+        \begin{multicols}{2}
+        \begin{demo}
+          Notice first that the optimal objective value of
+          $L_{m}$ is $0$. Therefore, if we show that $0$ is an
+          objective value of $L_{m}$ it is necessarily the
+          optimal one.\pause[3]
+
+          If $L$ is feasible then there is a tuple
+          $(t_1, \ldots, t_n)$ of non-negative real numbers satisfying
+          all linear constraints of $L$. The tuple
+          $(0, t_1, \ldots, t_n)$ does thus satisfy $L_{m}$ and
+          $0$ is then an objective value of $L_{m}$, i.e. the
+          optimal one.\pause[4]
+
+          Conversely, if $L_{m}$ has objective value $0$ (thus
+          optimal) it is of the form $(0, t_1, \ldots, t_n)$. Plugging
+          this tuple in the linear constraints of $L_{m}$ it
+          implies $(t_1, \ldots, t_n)$ is a solution of $L$.
+        \end{demo}
+    \end{multicols}
+    \end{onlyenv}
+    \begin{onlyenv}<5>
+    The difference between $L$ and $L_{m}$ is that $L_{m}$ is always feasible :
+        \begin{center}
+        \begin{minipage}{.7\textwidth}
+        \begin{tcolorbox}[
+                enhanced,
+                parbox = true,
+                colback = mLightBrown!30!white,
+                colframe = mLightBrown!30!white,
+                arc = 0mm,
+                ]
+                If $b_{min}$ is the smallest negative $b_i$ for
+                $i \in B$, the tuple $(-b_{min}, 0, \ldots, 0)$ is a
+                feasible solution of $L_{m}$.
+        \end{tcolorbox}
+        \end{minipage}
+        \end{center}
+        Thus, temporarily admitting validity of the
+        \textit{restricted} simplex algorithm, if we're able to find a
+        linear program equivalent to $L_{m}$ which has \alert{feasible
+          basic solution} then we can decide on the feasibilty of $L$.
+    \end{onlyenv}
+    \end{overlayarea}
+\end{frame}
+
+\begin{frame}{Deciding On Feasibility}
+    \setlength\columnseprule{.1pt}
+    \begin{multicols}{2}
+        Consider the slack form of $L_{m}$
+        \begin{figure}
+            \begin{linearProgG}{
+                ${\displaystyle z = -x_0}$
+                }{
+                ${\displaystyle \forall i \quad x_{i + m} + \sum_{j=1}^n a_{ij}x_j - x_0 = b_i}$
+                }{
+                $\forall j \in N\cup B \cup\{0 \}, \quad x_j \geq 0$
+                }
+            \end{linearProgG}
+        \end{figure}
+        \pause
+        Basic solution of $L_{m}$ is not feasible as soon as $L$ is
+        not, i.e. as soon as a $b_i$ is negative. \alert{\textbf{We
+            assume this is the case}}.
+
+        \pause
+        Let $b_{min}$ be the minimal $b_i$ coefficient. We already
+        know that
+        $(-b_{min}, 0, \ldots, 0, \bs{b} - b_{min})$
+        is a feasible solution of
+        $L_{m}$.
+
+        \pause
+        Let's now use \mintinline{python}{pivot} with entering
+        variable $0$ and leaving one $min$. The \alert{\textbf{same}}
+        previous feasible solution of $L_{m}$ is now the basic
+        solution of the linear program we got after pivoting.
+        \vspace{.5\baselineskip}
+
+        \pause
+        \textbf{We got an equivalent linear program to $\bs{L_{m}}$
+          having feasible basic solution !}
+    \end{multicols}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Tableau of Auxiliary Linear Program}
+  The tableau \mintinline{python}{T_m} of $L_m$ is obtained out of the
+  one for $L$ (\mintinline{python}{T}) by adding column
+  $(-1, 1, \ldots, 1)^T$ to tableau before column $\bs{b}^T$ and
+  putting old coefficients of first row to $0$.
+  \begin{figure}
+    \begin{tabular}{c|ccc|ccccc|c|}
+      & \alert{$\bs{x_1}$} & \alert{$\cdots$} & \alert{$\bs{x_n}$} & \alert{$\bs{x_{n+1}}$} & \alert{$\bs{x_{n+2}}$} & \alert{$\cdots$} & \alert{$\bs{x_{n+m}}$} & \alert{$\bs{x_0}$} &  \\
+      \hline
+      & $0$ & $\cdots$ & $0$ & $0$ & $0$ & $\cdots$ & $0$ & $1$ & $0$ \\
+      \hline
+      \alert{$\bs{n+1}$} & $a_{11}$ & $\cdots$ & $a_{1n}$ & $1$ & $0$ & $\cdots$ & $0$ & $-1$ & $b_1$ \\
+      \alert{$\bs{n+2}$}& $a_{21}$ & $\cdots$ & $a_{2n}$ & $0$ & $1$ & $\cdots$ & $0$ & $-1$ & $b_2$ \\
+      \alert{$\vdots$}& $\vdots$ & $\ddots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\ddots$ & $\vdots$ & $\vdots$ & $\vdots$ \\
+      \alert{$\bs{n+m}$} & $a_{m1}$ & $\cdots$  & $a_{mn}$  & $0$ & $\cdots$ & $\cdots$ & $1$ & $-1$ & $b_m$
+    \end{tabular}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Testing Feasibility}
+  \begin{overlayarea}{1.05\textwidth}{.6\textheight}
+  \setlength\columnseprule{.1pt}
+  \begin{multicols}{2}
+    \scriptsize{
+      \begin{minted}[autogobble, linenos, breaklines]{python}
+        def is_feasible(N, B, T):
+        """Testing feasibility of linear program.
+
+        Args:
+          N, B (list[int]): lists of non-basic and
+          basic variables.
+          T (ndarray[float]): numpy array for
+          tableau of linear program.
+        Output:
+          (bool) True if program is feasible
+          False otherwise.
+        """
+        p, q = T.shape[0], T.shape[1]
+        c = T[0, :]
+        T[0, :] = [0]*q
+        new_c = np.array([1] + [-1]*(p-1), dtype=float)
+        T = np.insert(T, -1, new_c, axis=1)
+        N.append(0)
+        # pivoting to be basic feasible
+        i_min = np.argmin(T[1: ,-1])
+        pivot(N, B, T, i_min, 0)
+        V = _simplex(N, B, T)
+        return math.isclose(V[0], 0)
+        # Possibly slightly modifying the
+        # optimisation problem ...
+      \end{minted}
+    }
+  \end{multicols}
+\end{overlayarea}
+\pause
+  \begin{tcolorbox}[
+    enhanced,
+    parbox = false,
+    colback = mLightBrown!30!white,
+    colframe = mLightBrown!30!white,
+    arc = 0mm,
+    ]
+    Not an equivalent LP to L there! Need to understand boundary effects.
+  \end{tcolorbox}
+\end{frame}
+
+\section{Get A Feasible Basic Solution}
+
+\begin{frame}{Getting a Feasible Basic Solution}
+  \begin{halfshyblock}{Assumption}
+    We assume \mintinline{python}{is_feasible(N, B, T)} returns
+    \mintinline{python}{True}.
+  \end{halfshyblock}
+  \vspace{.5\baselineskip}
+  \begin{overlayarea}{\textwidth}{.6\textheight}
+    \begin{onlyenv}<2>
+      Under the previous assumption \mintinline{python}{is_feasible}
+      transforms $L_m$ into an equivalent linear program $P$ which has
+      feasible basic solution with objective value $0$.
+    \end{onlyenv}
+    \begin{onlyenv}<3->
+      \begin{itemize}
+      \item<3-> Replace the objective value of $P$ with the original one of $L$.
+      \item<4-> Make of it a proper LP $Q$ in slack form by replacing
+        possible basic variables of the objective value with their
+        expressions in terms of non-basic variables of $P$.
+      \item<5-> Ensure $x_0$ is no more a basic variable $Q$ by
+        pivoting with leaving variable $0$ and entering one any
+        variable having non-zero coefficient.
+      \end{itemize}
+      \pause[6]
+      \vspace{.5\baselineskip}
+      \begin{halfshyblock}{Fact}
+        Putting $x_0$ to $0$ in $Q$ gives back an equivalent LP to $L$
+        having feasible basic solution.
+      \end{halfshyblock}
+    \end{onlyenv}
+  \end{overlayarea}
+\end{frame}
+
+\begin{frame}[fragile]{The \mintinline{python}{is_feasible} function}
+  \begin{overlayarea}{1.05\textwidth}{.75\textheight}
+    \setlength\columnseprule{.1pt}
+    \begin{multicols}{2}
+      \scriptsize{
+        \begin{minted}[autogobble, linenos, breaklines]{python}
+          def is_feasible(N, B, T):
+          """Testing feasibility of linear program.
+
+          Args:
+            N, B (list[int]): lists of non-basic and
+            basic variables.
+            T (ndarray[float]): numpy array for
+            tableau of linear program.
+          Output:
+            (bool) True if program is feasible
+            False otherwise.
+          Boundary effect:
+            Transforms T into an equivalent LP having
+            basic feasible solution if T is feasible.
+          """
+          p, q = T.shape[0], T.shape[1]
+          c = T[0, :]
+          T[0, :] = [0]*q
+          new_c = np.array([1] + [-1]*(p-1), dtype=float)
+          T = np.insert(T, -1, new_c, axis=1)
+          N.append(0)
+          # pivoting to be basic feasible
+          i_min = np.argmin(T[1: ,-1])
+          pivot(N, B, T, i_min, 0)
+          V = _simplex(N, B, T)
+          if 0 in B:
+            l, e = B.index(0), 0
+            while T[l, e] == 0 or e == l:
+              e += 1
+            pivot(N, B, T, l, e)
+          for i in B:
+            c -= c[i]*T[B.index(i), :]
+          T[0, :] = c
+          return math.isclose(V[0], 0)
+          # Possibly slightly modifying the
+          # optimisation problem ...
+      \end{minted}
+    }
+  \end{multicols}
+\end{overlayarea}
+\end{frame}
+
+\begin{frame}{Where We Stand?}
+  We are now able to
+  \begin{itemize}
+  \item<1->
+    know whether a linear program is feasible or not using
+    \mintinline{python}{is_feasible}
+  \item<2->
+    if it is feasible we can build up an equivalent linear program
+    which has feasible basic solution using boundary effect of
+    \mintinline{python}{is_feasible}
+  \item<3->
+    once we get a linear program having feasible basic solution we can
+    check whether our linear program is unbounded or has a
+    \textit{hopefully} optimal finite solution using the
+    \textit{restricted} \mintinline{python}{_simplex}.
+  \end{itemize}
+  \pause[4]
+  We are left with showing validity of \textit{restricted}
+  \mintinline{python}{_simplex}!
+  \begin{tcolorbox}[
+    enhanced,
+    parbox = false,
+    colback = mLightBrown!30!white,
+    colframe = mLightBrown!30!white,
+    arc = 0mm,
+    ]
+    We call \mintinline{python}{simplex} the algorithm globally going
+    through all previous steps.
+  \end{tcolorbox}
+\end{frame}
+
+\begin{frame}
+  \centering
+  {\huge \textbf{That's it for today !}}
+\end{frame}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

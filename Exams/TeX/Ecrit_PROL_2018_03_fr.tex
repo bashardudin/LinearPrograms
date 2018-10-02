@@ -1,0 +1,201 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english, french]{babel}
+\usepackage{fancyhdr}
+\usepackage[margin=.7in]{geometry}
+\usepackage{exsheets}
+\usepackage{enumerate}
+
+\usepackage{./Style/linearProgramsStyle} % This is a set of commands for maths content.
+
+\pagestyle{fancy}
+
+\renewcommand{\headrulewidth}{2pt}
+\fancyhead[L]{EPITA\_ING1\_2020\_S5\_PROL}
+\fancyhead[R]{Mars 2018}
+
+\fancyfoot[C]{\textbf{\thepage}}
+\fancyfoot[L]{}
+
+\pretitle{\vspace{-.5\baselineskip} \begin{center}}
+\title{%
+  { \huge Programmation linéaire}\\ %
+  \vspace{.5\baselineskip}
+  {\Large \textit{Épreuve complémentaire} }
+}
+\posttitle{
+\end{center}
+  \begin{flushleft}
+    \vspace{2\baselineskip} \textit{
+      \!\!\emph{Durée de l'épreuve: 1h30.}\\
+      \! \emph{Les documents ne sont pas autorisés}  \\
+      Les caclulatrices non programmables sont autorisées.
+    }
+  \end{flushleft}
+  \rule{\textwidth}{1.5pt}
+  \vspace{-5\baselineskip}
+}
+\author{}
+\date{}
+
+\pdfinfo{
+   /Author (Bashar Dudin)
+   /Title  (Exam PROL-- 2018)
+   /Subject (Programmation lineaire)
+}
+
+\begin{document}
+
+\maketitle\thispagestyle{fancy}
+
+On considère les programmes linéaires suivants respectivement nommés
+$(A)$, $(B)$, $(C)$, $(D)$, $(E)$ et $(F)$.
+\[
+(A) \;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $3x_1 + 2x_2 + 3x_3$
+    }{
+      \systeme{
+        -x_1 - 2x_2 - 3x_3 \leq 5,
+        2x_1 + x_2 + x_3 \leq 3,
+        -x_1 - x_2 + x_3 \leq 1
+      }
+    }{
+      $x_1$, $x_2$, $x_3 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\qquad (B)\;
+\left\{
+  \begin{linearProg}{
+      minimize
+    }{
+      $ x_1 + x_2 - x_3$
+    }{
+      \systeme{
+        -x_1 - 2x_2 + 3x_3 \leq 1,
+        - x_1 - x_2 + 2x_3 \geq 2
+      }
+    }{
+      $x_1$, $x_2$, $x_3 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\]
+\[
+(C) \;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $3x_1 + 2x_2 + 3x_3$
+    }{
+      \systeme{
+        -x_1 - 2x_2 - 3x_3 \leq 5,
+        2x_1 + x_2 + x_3 \leq 3,
+        -x_1 - x_2 + x_3 \leq 1
+      }
+    }{
+      $x_1$, $x_2 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\qquad (D) \;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $-x_1 - x_2 + x_3$
+    }{
+      \systeme{
+        -x_1 + 2x_2 - 3x_3 + x_4 = 1,
+         x_1 + x_2 - 2x_3 \leq -2
+      }
+    }{
+      $x_1$, $x_2$, $x_3$, $x_4 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\]
+\[
+\qquad (E)\;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $ -x_1 - x_2 + x_3$
+    }{
+      \systeme{
+        -x_1 - 2x_2 + 3x_3 \leq 1,
+        - x_1 - x_2 + 2x_3 \geq 2
+      }
+    }{
+      $x_1$, $x_2$, $x_3 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\qquad (F)\;
+\left\{
+  \begin{linearProg}{
+      maximize
+    }{
+      $6x_1 + 4x_2 + 6x_3$
+    }{
+      \systeme{
+        -x_1 - 2x_2 - 3x_3 \leq 5,
+        2x_1 + x_2 + x_3 \leq 3,
+        x_1 + x_2 - x_3 \geq -1
+      }
+    }{
+      $x_1$, $x_2 \geq 0.$
+    }
+  \end{linearProg}
+\right.
+\]
+
+\section{Équivalence et dualité}
+
+\begin{question}{3}
+  Grouper les programmes linéaires précédents suivant leurs classes
+  d'équivalences ; deux programmes sont dans la même classe s'ils sont
+  équivalents.
+\end{question}
+
+\begin{question}{2}
+  Donner les tableaux associés à $(F)$ et $(B)$.
+\end{question}
+
+\begin{question}{2}
+  Quels sont les programmes duaux de $(A)$ et de $(E)$?
+\end{question}
+
+\begin{question}{2}
+  Deviner des solutions admissibles de $(A)$ et de $(D)$.
+\end{question}
+
+\section{Algorithme du simplexe}
+
+\begin{question}{4}
+  Résoudre le programme linéaire $(A)$ en suivant l'algorithme du
+  simplex.
+\end{question}
+
+\begin{question}{2}
+  À partir d'une solution de $(A)$ donner un point optimal de son
+  dual. Quelle est sa valeur objective?
+\end{question}
+
+\begin{question}{5}
+  Résoudre le programme duale de $(E)$.
+\end{question}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

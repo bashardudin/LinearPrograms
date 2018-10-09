@@ -150,9 +150,8 @@
     \]
     How many extremal points do the following constraints define?
   \end{halfshyblock}
-  \pause
-  As the example shows, complexity at worst grows exponentially. With
-  number of inequalities defining the constraints.
+  \pause As the example shows, complexity at worst grows exponentially
+  with respect number of inequalities defining the constraints.
 \end{frame}
 
 \begin{frame}{Boundary Optimizes Linear Function | A Better Search}
@@ -163,8 +162,8 @@
     A given step returns a higher or equal objective value than
     previous step.
   \end{quotation}
-  It has an initialization step, we're keeping on the side for
-  now by working under the following assumption:
+  It has an initialization step we'll be keeping on the side for now
+  by working under the following assumption:
   \begin{alertblock}{Assumption}
     Given a linear program $L$ in \textit{standard} form, we assume
     the vector having only zero entries is a feasible solution of $L$.
@@ -262,7 +261,7 @@
               about doing so to $x_3$ and $x_2$. \pause The thing to
               notice is that extremal points are exactly those for
               which $2$ variables are set to $0$. \pause To keep
-              pattern \textit{set variables on the left to $0$} we're
+              pattern \textit{set variables on the right to $0$} we're
               going to exchange sides of $x_1$ and $x_3$ (variables
               that entered into choice of walk).
             \end{onlyenv}
@@ -289,7 +288,7 @@
                 back the expected feasible solution.
             \end{onlyenv}
             \begin{onlyenv}<5-6
-                >\alt<5>{
+                >\alt<6>{
                 \textcolor{orange}{
                 \begin{figure}
                   \small{

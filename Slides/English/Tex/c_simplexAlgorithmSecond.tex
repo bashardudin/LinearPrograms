@@ -331,9 +331,8 @@
               T (ndarray[float]): numpy array for
               tableau of linear program.
             Output:
-              (ndarray[float]) vector tail of which
-              is maximal objective value, rest is
-              optimal point.
+              (ndarray[float], float) tuple of optimal
+              point and objective value.
             """
             m, margins = len(B), dict()
             aug_var = [i for i in N if T[0, i] < 0]
@@ -350,7 +349,7 @@
               l = random.choice(minima)
               pivot(N, B, T, e, l)
               aug_var = [i for i in N if T[0, i] < 0]
-            return T[:, -1]
+            return np.array([T[i:-1] for i in range(len(N))]), T[0:-1]
       \end{minted}
     }
   \end{multicols}
@@ -554,7 +553,7 @@
                 raise Exception("Unbounded LP")
               pivot(N, B, T, e, l)
               aug_var = [i for i in N if T[0, i] < 0]
-            return T[:, -1]
+              return np.array([T[i:-1] for i in range(len(N))]), T[0:-1]
       \end{minted}
     }
   \end{multicols}

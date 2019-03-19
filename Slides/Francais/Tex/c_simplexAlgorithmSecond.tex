@@ -34,36 +34,34 @@
 \end{frame}
 
 \begin{frame}{Où on en est, à quoi on fait face.}
-  La procédure adoptée jusqu'à présent s'est toujours terminée jusqu'à
-  présent. Notre conjecture de base est qu'elle nous renvoie un point
-  optimal du programme linéaire de départ. Pour l'instant on ne peut
-  pas en être certains. Par bien des égards ce qu'on a fait jusqu'à
-  présent est loin d'être satisfaisants. Étant donné un programme
-  linéaire $L$, voici la liste des choses auxquelles on n'a pas encore
-  répondu:
+  La procédure adoptée à ce stade s'est toujours terminée. Notre
+  conjecture de base est qu'elle nous renvoie un point optimal du
+  programme linéaire de départ. Pour l'instant on ne peut pas en être
+  certains. Par bien des égards ce qu'on a fait jusqu'à présent est
+  loin d'être satisfaisant. Étant donné un programme linéaire $L$,
+  voici une liste de points qu'ils nous restent à éclaircir:
     \begin{itemize}
     \item[\textcolor<6>{lightgray}{\textbullet}]<1->
-      \textcolor<6>{lightgray}{on a aucun moyen de teste si $L$ est
-        admissible.}
+      \textcolor<6>{lightgray}{Comment savoir si $L$ est admissible?}
     \item[\textcolor<6>{lightgray}{\textbullet}]<2->
-      \textcolor<6>{lightgray}{Comment traiter le cas où la solution
-        de base n'est pas admissible?}
+      \textcolor<6>{lightgray}{Que faire lorsque la solution de base
+        n'est pas admissible?}
         \item[\textbullet]<3->
-          Comment vérifier si $L$ n'est pas majoré?
+          Comment vérifier que $L$ n'est pas majoré?
         \item[\textbullet]<4-> Est-ce que la procédure qu'on a pu
           tester jusqu'à présent se termine en général?
         \item[\textcolor<6>{lightgray}{\textbullet}]<5->
           \textcolor<6>{lightgray}{Si la procédure se termine, est-ce
-            qu'on a une valeur optimale?}
+            qu'on en déduit toujours une valeur optimale?}
     \end{itemize}
 \end{frame}
 
 \section{Pivoter}
 
-\begin{frame}{Pivoter | Fixer la notatiion}
-  Dans le but de répondre aux deux questions précédentes il va nous
-  falloir écrire au propre les algorithmes qu'on a testé à la main. On
-  considère le programme llinéaire $L$
+\begin{frame}{Pivoter | Fixer la notation}
+  Dans le but de répondre aux questions qu'ils nous restent à aborder
+  il va nous falloir écrire au propre les algorithmes qu'on a testés à
+  la main. On considère le programme linéaire $L$
   \begin{figure}
     \alt<4>{
       \textcolor{orange}{
@@ -103,7 +101,7 @@
           On écrit
             \begin{itemize}
             \item[\textbullet]
-              $\bs{A}$ pour la matrice de taille $(m, n)$ des coéfficients
+              $\bs{A}$ pour la matrice de taille $(m, n)$ des coefficients
               $\big(a_{ij}\big)_{\substack{1 \leq i \leq m \\ 1 \leq j \leq n}}$
             \item[\textbullet]
               $\bs{b}$ pour le $m$-tuple $(b_1, \ldots, b_m)$
@@ -124,7 +122,7 @@
           initialisé à $\{1, \ldots, n\}$ et $B$ à
           $\{n+1, \ldots, n+m\}$. \pause[4] \textcolor{orange}{Pour se
             rapprocher de l'écriture d'un système linéaire on modifie
-            légérement l'écriture de la forme slack.}
+            légèrement l'écriture de la forme slack.}
         \end{onlyenv}
     \end{overlayarea}
 \end{frame}
@@ -136,11 +134,11 @@
   concaténation de $\bs{A}$ et $\bs{I}_m$ le long des lignes de
   $\bs{A}$. Le \emph{tableau} $T$ de $L$ est obtenu en
   \begin{itemize}
-  \item<2-> concatenant $\underline{\bs{A}}$ et $b^T$ le long des
-    colonnes de $A$
-  \item<3-> concatenant les résultat avec le vecteur
+  \item<2-> concaténant $\underline{\bs{A}}$ et $b^T$ le long des
+    lignes de $A$
+  \item<3-> concaténant les résultats avec le vecteur
     $(-c_1, \ldots, -c_n, 0, \ldots 0, \nu)$ de taille $n+m+1$ le long
-    des lignes de $\bs{A}$.
+    des colonnes de $\bs{A}$.
   \end{itemize}
   \pause[4]
   \begin{figure}
@@ -281,16 +279,14 @@
   \begin{halfshyblock}{Fait}
     \begin{onlyenv}<1
       >S'il y a un indice $j$ tel que $c_j > 0$ et
-      tous les coéfficients de $x_j$ dans les contraintes linéaires
+      tous les coefficients de $x_j$ dans les contraintes linéaires
       sont négatifs alors $L$ est non majoré.
     \end{onlyenv}
     \begin{onlyenv}<2-
-      >\!\alert{De manière équivalent, s'il y a une
+      >\!\alert{De manière équivalente, s'il y a une
         colonne dans le tableau de $L$ ayant une première entrée
         négative non nulle et toutes les autres négatives alors $L$
-        est non majoré. if there was a column in the program's tableau
-        having negative first entry and only non-positive ones
-        afterwards then $L$ is unbounded.}
+        est non majoré.}
     \end{onlyenv}
     \end{halfshyblock}
 \end{frame}
@@ -301,15 +297,15 @@
   propriété:
   \begin{quote}
     Il existe un indice $j$ tel que $c_j > 0$ et tous les autres
-    coefficients de $x_j$ dont négatifs ou nuls.
+    coefficients de $x_j$ sont négatifs ou nuls.
     \end{quote}
     \pause
     C'est une condition nécessaire, pour l'instant on a aucune
     garantie qu'on tombe dans une telle situation quand $L$ n'est pas
     majoré. Le fait que ce soit le cas vient des résultats de dualité.
-    \pause
-    Pour l'instant on va devoir accepter que ce test naïf sera
-    suffisant.
+
+    \pause Pour l'instant on va devoir accepter que ce test naïf sera
+    suffisant\footnote{Il l'est mais on a encore aucune certitude.}.
 \end{frame}
 
 \section{The Simplex Algorithm : Second Try}
@@ -359,139 +355,81 @@
   \end{overlayarea}
 \end{frame}
 
-% \begin{frame}{The Simplex Algorithm : First Validity Checks}
-%   There are two things we need to check in order to temporarily
-%   accept the previous version of the simplex algorithm
-%     \begin{enumerate}
-%         \item<2->
-%           after each call to \mintinline{python}{pivot} the linear
-%           program we get has feasible basic solution
-%         \item<3->
-%           \textcolor<4->{lightgray}{the objective value does not
-%             decrease while looping}
-%           \only<4->{\textcolor{orange}{\textbf{(We choose it that
-%                 way!)}}}
-%     \end{enumerate}
-%     \pause[5]
-%     and a last point to \textit{understand} :
-%     \begin{enumerate}
-%         \item[3.]
-%           what does it mean for \mintinline{python}{_simplex} not to terminate? how
-%           can we deal with it?
-%     \end{enumerate}
-% \end{frame}
-
-% \begin{frame}[fragile]{Feasability of the basic solution after each call for \mintinline{python}{pivot}}
-%     \setlength\columnseprule{.1pt}
-%     \begin{multicols}{2}
-%       Input is an LP $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ having
-%       feasible basic solution, i.e. \mintinline{python}{T[1:, -1]} is
-%       non-negative. We show effect of \mintinline{python}{pivot}
-%       leaves an LP with feasible basic solution as well. Since
-%       \mintinline{python}{pivot} is called, \mintinline{python}{T[l, e] > 0}.
-
-%       \pause
-%       Updates of $\bs{b}$ are give by the relations
-%       \small{
-%       \begin{minted}[autogobble]{python}
-%         T[l, -1] = (1/T[l, e])*T[l, -1]
-%       \end{minted}
-%       }
-%       and for each $i \in \{1, \ldots, m+1\}$
-%       \small{
-%         \begin{minted}[autogobble]{python}
-%           T[i, -1] -= (T[i, e]/T[l, e])*T[i, -1]
-%         \end{minted}
-%       }
-%       \pause
-%       The only possibility for such updates to give a negative result
-%       is when \mintinline{python}{T[i, e] > 0}. In that case
-%       \mintinline{python}{_simplex} chooses \mintinline{python}{l} in such a
-%       way that
-%       \small{
-%       \begin{minted}[autogobble]{python}
-%         T[l, -1]/T[l, e] <= T[i, -1]/T[i, e]
-%       \end{minted}
-%       }
-%       \pause
-%       Therefore, if \mintinline{python}{-T[i, e] < 0}, mutliplying
-%       previous inequality by it and adding \mintinline{python}{T[i, -1]}
-%       we get that update after \mintinline{python}{pivot} is
-%       non-negative.
-%     \end{multicols}
-% \end{frame}
-
 \begin{frame}{Boucler}
   À chaque fois qu'on entre dans la boucle \mintinline{python}{while}
   de \mintinline{python}{_simplex} ou bien on \textit{augmente la
     valeur objective} ou alors on découvre que le PL est non-majoré. A
-  priori, \mintinline{python}{_simplex} pourrait s'executer
+  priori, \mintinline{python}{_simplex} pourrait s'exécuter
   indéfiniment, en itérant entre des formes slack équivalentes ayant
   une valeur objective constante. On va chercher à étudier ce
   phénomène.
   \pause
-    \begin{prop}[\textbf{C}]
-      Soit $L$ un PL $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ où $\bs{A}$
-      est une matrice $(m, n)$. Si la boucle de
-      \mintinline{python}{_simplex} s'exécute plus de $\binom{n+m}{m}$
-      fois, alors l'algorithme boucle, i.e. la boucle s'exécute
-      indéfiniment en alternant entre un nombre fini de formes slack
-      ayant la même valeur objective.
-    \end{prop}
-    \begin{rem}
-      Cela signifie que dès que \mintinline{python}{_simplex} entre
-      dans sa boucle principale plus $\binom{n+m}{m}$ fois alors on
-      peut retourner la valeur objective et la solution de base
-      courante.
-    \end{rem}
-    \end{frame}
+  \begin{prop}[\textbf{C}]
+    Soit $L$ un PL $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ où $\bs{A}$
+    est une matrice $(m, n)$. Si la boucle de
+    \mintinline{python}{_simplex} s'exécute plus de $\binom{n+m}{m}$
+    fois, alors l'algorithme boucle, i.e. la boucle s'exécute
+    indéfiniment en alternant entre un nombre fini de formes slack
+    ayant la même valeur objective.
+  \end{prop}
+  \begin{rem}
+    Cela signifie que dès que \mintinline{python}{_simplex} entre
+    dans sa boucle principale plus $\binom{n+m}{m}$ fois alors on
+    peut retourner la valeur objective et la solution de base
+    courante.
+  \end{rem}
+\end{frame}
 
-    % \begin{frame}{Cycling}
-    %     The proof of the above proposition is based on two facts :
-    %     \begin{itemize}
-    %     \item if we ever get back to a previously obtained slack form,
-    %       then we are going to have the same set of options we had for
-    %       equivalent slack forms once again.
-    %     \item There is only a finite set of possible slack forms for
-    %       the same given linear program.
-    %     \end{itemize}
-    %     \pause
-    %     The second point is the only point we need to make clear.
-    % \end{frame}
+\begin{frame}{Boucler}
+  La preuve de la proposition ci-dessus se base sur deux faits:
+  \begin{itemize}
+  \item si on tombe sur une forme slack déjà vue au cours de la
+    résolution des précédentes itérations, alors on retrouvera par
+    la suite les mêmes itérations qui s'ensuivaient, on a un
+    comportement périodique ;
+  \item il n'y a qu'un nombre fini de formes slacks possibles pour
+    un même programme linéaire.
+  \end{itemize}
 
-    % \begin{frame}{Cycling}
-    %     \begin{lem}[$\bs{B}$]
-    %       Let $L$ be an LP given by $(\bs{A}, \bs{b}, \bs{c})$. A
-    %       slack form of $L$ appearing in \mintinline{python}{_simplex}
-    %       is determined by the choice of a set $B$ of basic variables.
-    %     \end{lem}
-    %     \pause
-    %     \setlength\columnseprule{.1pt}
-    %     \begin{multicols}{2}
-    %         \begin{demo}
-    %           Such slack forms $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$
-    %           and $(N, B, \bs{A'}, \bs{b'}, \bs{c'}, \nu')$ are
-    %           equivalent through the identity map.  \pause
-    %           Substracting the linear constraints, we get the
-    %           relations :
-    %           \[
-    %           0 = (\nu - \nu') + \sum_{j \in N} (c_j - c_j')x_j
-    %           \]
-    %           and for each $i \in B$
-    %           \[
-    %           0 = (b_i - b_i') - \sum_{j \in N} (a_{ij} - a_{ij}')x_j.
-    %           \]
-    %           We're abusing notation here ; index of coefficients is
-    %           the one corresponding to line of $\bs{A}$ supporting
-    %           basic variable $i$.
+  \pause Seul le second point nécessite d'être clarifié. On se
+  contente de le montrer dans le cas de PL ayant un lieu admissible
+  d'intérieur non vide.
+\end{frame}
 
-    %           \pause These relations being true for any vector
-    %           $(x_1, \ldots, x_n)$ it is clear that for each $i \in B$
-    %           and $j \in N$ we have  $\nu = \nu'$, $b_i = b_i'$, $c_j = c_j'$,
-    %           $a_{ij} = a_{ij}'$.
-    %         \end{demo}
-    %     \end{multicols}
-    % \end{frame}
+\begin{frame}{Boucler}
+  \begin{lem}[$\bs{B}$]
+    Soit $L$ un PL donné par $(\bs{A}, \bs{b}, \bs{c})$. Une forme
+    slack de $L$ qui apparaît dans \mintinline{python}{_simplex} est
+    déterminée par le choix d'un sous-ensemble $B$ de variables de
+    base.
+  \end{lem}
+  \pause
+  \setlength\columnseprule{.1pt}
+  \begin{multicols}{2}
+    \begin{demo}
+      Deux formes slacks $(N, B, \bs{A}, \bs{b}, \bs{c}, \nu)$ et
+      $(N, B, \bs{A'}, \bs{b'}, \bs{c'}, \nu')$ sont équivalentes.
+      \pause
+
+      \vspace{\baselineskip}
+      En étudiants la différence des contraintes linéaires, on obtient
+      les relations:
+      \[
+        0 = (\nu - \nu') + \sum_{j \in N} (c_j - c_j')x_j
+      \]
+      et pour chaque $i \in B$
+      \[
+        0 = (b_i - b_i') - \sum_{j \in N} (a_{ij} - a_{ij}')x_j.
+      \]
+
+      \pause Ces relations étant vraie pour tout vecteur
+      $(x_1, \ldots, x_n)$ dans le lieu admissible de LP, si le lieu
+      admissible de LP est d'intérieur non vide, il est clair que pour
+      tout $i \in B$ et $j \in N$ on a $\nu = \nu'$, $b_i = b_i'$,
+      $c_j = c_j'$, $a_{ij} = a_{ij}'$.
+    \end{demo}
+  \end{multicols}
+\end{frame}
 
 \begin{frame}{Boucler}
   Rajouter un compteur de boucle à l'algo du
@@ -499,7 +437,7 @@
   \mintinline{python}{_simplex}.
   \pause
   \begin{rem}
-    Cette solution n'est pas intélligente. Il y a plusieurs solutions
+    Cette solution n'est pas intelligente. Il y a plusieurs solutions
     à ce problème en pratique. Dans notre cas on implémente la règle
     de \emph{Bland}: à chaque choix d'indice aux lignes $21$ et $30$
     de \mintinline{python}{_simplex}, on choisit le plus petit
